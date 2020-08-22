@@ -8,82 +8,57 @@
   <meta name="viewport" content="width=device-width">
   <title>Sokobond JS</title>
 </head>
-<body>
-<h4>Sokobond JS</h4>  
+
+<body  ONKEYUP="Key_Input(event.keyCode);">
   
-<style>
-.table 
-  {
-  display: table;  
-  border : solid;
-  border-width: 1px;
+<h4>Sokobond JS</h4>  
+
+<style>  
+div{ 
+  -float: left;
+  -border : solid; 
+  -border-width: 1px;  
   }
-.tr 
-  { 
-  display: table-row; 
-  }
-.td 
-  { 
-  display: table-cell;
-  border : solid;
-  border-width: 1px;
-  text-align: center;
-  vertical-align: middle;
-  }    
-.atom
-  {
+
+.vacuum{    
+  display: inline-block;
+   text-align: center;
+
   width: 50px;
   height: 50px;
+   
+  border : solid; 
+  border-width: 1px;  
   }
   
-.bond
-  {
-  width: 15px;  
-  height: 15px; 
-  border : none;
+.bond_vert{
+  display: inline-block;
+   text-align: center;
+  
+  width: 15px; 
+  height: 50px;
   }
 
+.bond_horiz{
+  display: inline-block;
+   text-align: center;
+  
+  padding: 1px;
+  width: 50px;
+  height: 15px;     
+  }
+  
+.hyperspace{
+  display: inline-block;
+   text-align: center;
+  
+  width: 15px;  
+  height: 15px;   
+  }
+    
 </style>
-
-<div class="table">
-    <div class="tr">
-        <div class="td atom">C</div>
-        <div class="td bond">▬
-      ▬      
-▬</div>
-        <div class="td atom">a</div>
-         <div class="td bond">a</div>
-        <div class="td atom">He</div>
-    </div>
-    <div class="tr">
-        <div class="td bond">│││</div>
-        <div class="td bond">+</div>
-        <div class="td bond">a</div>
-        <div class="td bond">-</div>
-        <div class="td bond">a</div>
-    </div>    
-    <div class="tr">
-        <div class="td atom">O</div>
-        <div class="td bond">a</div>
-        <div class="td atom">a</div>
-         <div class="td bond">a</div>
-        <div class="td atom">a</div>
-    </div>
-    <div class="tr">
-        <div class="td bond">a</div>
-        <div class="td bond">•</div>
-        <div class="td bond">a</div>
-        <div class="td bond">a</div>
-        <div class="td bond">a</div>
-    </div>    
-    <div class="tr">
-        <div class="td atom">a</div>
-        <div class="td bond">a</div>
-        <div class="td atom">a</div>
-         <div class="td bond">a</div>
-        <div class="td atom">a</div>
-    </div>
-</div>
+  
+<div id=board></div>
 
 <script>  
 var msg; //for errors
@@ -92,62 +67,75 @@ var input_string = `4_2
 W0W0W0W0W0W0W0W0W
 00000000000000000
 W000C00000000000W
-00000000000000000
-W000000000000000W
-00000000000000000
+0000000000000.000
+W000000000000000W0W0W0W
+00000000000-00000
 W00000H000H00000W
+00000+00000000000
+W0000000H1H00000W0W
 00000000000000000
-W000000000000000W
-00000000000000000
-W0W0W0W0W0W0W0W0W
+W0W0W0W0W0W0W0W0W0W0W
 `;  
 
 //0 indicates vacuum only 
 var atom_chars = ['H','h','O','C','N'];
-var even_char = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
-var odd_chars = ['0','+','-','.']; //+ = bond_joiner , - = bond_splitter , . = bond_twister
-var mixed_chars = ['0','1','2','3','4']; 
-
-var dir = {
+var even_chars = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
+var modifier_chars = ['+','-','.'];
+//var odd_chars = ['0','+','-','.']; //+ = bond_joiner , - = bond_splitter , . = bond_twister
+var bond_chars = ['1','2','3','4']; 
+var direction = {
  'N' : { 'x':0 , 'y':-1  },
  'S' : { 'x':0 , 'y':1  },
  'E' : { 'x':1 , 'y':0  },
  'W' : { 'x':-1 , 'y':0  }  
 }
+var x_me , y_me; 
 var me = {}; //atom but a special one  
-var board = {}; //board just used to shows icons aand set bounds?
-board.width;
-board.height;  
-var walls = {};
+var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
+//allows us to save board (stringify) then easily restore by parse and object.assign for each spot on board.  
+board.width = 0;
+board.height = 0;  
+//var empty = {};
+//var walls = {};
 var atoms = {}; // atom['x_y'] = new atom(x,y,letter);
-var bonds = {}; //bond['x_y'] = new bond(x,y,number)
-var bond_spliters = {}; //spliters[x_y] = 1; //decrease bond # by 1 and split molecules in two if 0
-  //spliters.Return_Spliters() 
-var bond_joiners = {}; //increase bond # by 1 if both atoms have free valance 
-var bond_twisters = {}; //if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
-var intended_atom_moves = {}; //intended_atom_moves[xNew_yNew] = atom[x_y];
-var intended_bond_moves = {}; 
-  //references to atoms and bonds, but with new x_y. an external move routine will cycle through intended move object keys. if there is nothing there at x_y, move it, and zero that key, then cycle again until no keys
-//WILL NOT WORK IN A RING? ?
-//so: Wipe all atoms = {}; and rebuild with intended_atom_moves then intended_atom_moves = {};
-//also used to see if two atoms are vying for same spot durin move test!
-  
+var bonds = {}; //bond['x_y'] = new bond(x,y,number) one kind of bond as we may need to move a horiz to a vertical (disply will change depending on location)
+//var bond_modifiers = {}; //letter = [+-.] x , y is_a
+// - decrease bond # by 1 and split molecules in two if 0 
+// + increase bond # by 1 if both atoms have free valance 
+// . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
+var atoms_intended_move = {}; //atoms_intended_move[xNew_yNew] = atom[x_y];
+var atoms_pre_move = {}; //atoms_pre_move[x_y] = atoms[x_y] need to avoid overwriting an atom when a moving atom goes where a moving atom has not yet been moved
+var bonds_intended_move = {};  //also used to see if two atoms are vying for same spot durin move test!
+var bonds_pre_move = {}; //so we can move atoms and not overwrite atoms yet to move
+
 function Atom(x , y , letter){ // Constructor
-  this.isA = 'atom';
+  this.is_a = 'atom';
   this.x = x;
   this.y = y;
-  this.direction;
+  //this.direction;
+  //this.dx;
+  //this.dy;
   this.letter = letter; //H, h, O, N, C
   this.valence = {'h': 0 , 'H':1 , 'O':2 , 'N':3 , 'C':4}[letter]; //set on create based on letter
    
-   this.Can_I_Move = function(direction){ //also transfers force
-    this.direction = direction;
+   this.Can_I_Move = function(dx,dy){ //also transfers force
+    //this.dx = dx;
+    //this.dy = dy;
+    var x_y = x.toString() + '_' + y.toString(); 
+    var x_y_new = (x+dx).toString() + '_' + (y+dy).toString();
+    if(walls[x_y_new]) {return false} //hit a wall
     //are we outside bounds, fail immediately
-    //is there a wall in my way? Y - return fail immediately
     //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
     //copy atom object to new position in var intended_moves{x_y} = this (if it is already set, fail immediately as two atoms cannot occupy same space) (this will also be used to move atoms if we are good to go) 
     //recursivly, to all bonds and atoms in "transfer force direction" (that are not already touched{x_y}=1) and await response that they can move. if one fails, immediately return fail 
     //move()
+     
+    // 
+    atoms_pre_move[x_y] = this; 
+    this.x = this.x + dx;
+    this.y = this.y + dy;
+    atoms_intended_move[x_y_new] = this; //copy ref to this atom and
+    
     return true; 
     } 
 
@@ -162,139 +150,236 @@ function Atom(x , y , letter){ // Constructor
   return this; //return constructor
 };
    
-function Bond(x,y,value){
-  this.isA = 'bond';
+function Bond(x,y,letter){
+  this.is_a = 'bond';
   this.x = x;
   this.y = y;
-  this.value = value;
-  
+  this.letter = letter;
+  this.value = parseInt(letter); 
   return this;
 }
   
-function Wall(){
-  this.isA = 'wall';
-  return this;  
+function Empty(x,y){
+  this.is_a = 'empty';
+  this.x = x;
+  this.y = y; 
+  return this;
 }
   
-function Splitter(x,y){
-  this.isA = 'spliter';
+function Wall(x,y,letter){
+  this.is_a = 'wall';
   this.x = x;
   this.y = y;
-  
-  return this;  
+  this.letter = letter;  
+  return this;
 }
   
-function Joiner(x,y){
-  this.isA = 'joiner';
+function Bond_Modifier(x,y,letter){
+  this.is_a = 'bond_modifier';
   this.x = x;
   this.y = y;
-  
-  return this;  
-}
-  
-function Twister(x,y){
-  this.isA = 'twister';
-  this.x = x;
-  this.y = y;
-  
-  return this;  
+  this.letter = letter;  
+  return this;
 }
   
 function State(x,y){
 var x_odd = x%2;
 var y_odd = y%2;
-if ( x_odd && y_odd ){return 'odd'}
-if ( !x_odd && !y_odd ){return 'even'}
-return 'mixed';
+if ( x_odd && y_odd ){return 'hyperspace'}
+if ( !x_odd && !y_odd ){return 'vacuum'}
+if ( x_odd && !y_odd ){return 'bond_vert'}
+if ( !x_odd && y_odd ){return 'bond_horiz'}
 }
   
+//document.getElementById("board").innerHTML = "<h1>dfsdfdsadf</h1>";
+function Next_Div(x_y , state){
+board_string = board_string + '<div id=' + x_y + ' class=' + state + '>&nbsp;</div>';  
+}
+
+function X_Y_To_String(x,y){
+return x_y = x.toString() + '_' + y.toString();  
+}
+  
+function String_To_X_Y( x_y ){//returns [x,y]
+return x_y.split('_');  
+}
+  
+//build display board and board objects
 input_string = input_string.trim();
 var lines = input_string.split("\n");
 //1st line is my position
 var x_me ,y_me;
-[x_me,y_me] = lines.shift().split('_');
+[x_me,y_me] = String_To_X_Y(lines.shift());
 var y = -1;
+var board_string = '';
 for(var line of lines){
   y++;
+  if(y > board.height) { board.height = y }
   var x = -1;
   for(var letter of line){
-    //test for odds, evens, mixed
     x++;
+    if(x > board.width) { board.width = x }
     var state = State(x,y);
-    var x_y = x.toString() + '_' + y.toString();
-    if(letter === '0') {continue} //0 indicates vacuum only  
+    var x_y = X_Y_To_String(x,y);
+    
+    Next_Div(x_y , state);
+    
+    if(letter === '0') { //0 indicates empty only 
+      board[x_y] = new Empty(x,y);
+    } 
     //bonds
-    if( mixed_chars.includes(letter) ) {
-      if( state !== 'mixed' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }
-      bonds[x_y] = new Bond(x,y,parseInt(letter));
+    if( bond_chars.includes(letter) ) {
+      board[x_y] = new Bond(x,y,letter);
     }
     //walls
     if( letter === 'W' ) {
-      if( state !== 'even' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }
-      walls[x_y] = new Wall();
+      board[x_y] = new Wall(x,y,letter);
     }
     //atoms
     if( atom_chars.includes(letter) ) {
-      if( state !== 'even' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }
-      if( (x == x_me) && (y == y_me) ){
-       atoms[x_y] = new Atom(x,y,letter); 
-       me = atoms[x_y];
-      }
-      else{
-        atoms[x_y] = new Atom(x,y,letter);
-      }
+      board[x_y] = new Atom(x,y,letter);
     }
         
-    if( letter === '-' ){
-      if( state !== 'odd' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }      
-      bond_spliters[x_y] = new Splitter(x,y);                                       
+    if( modifier_chars.includes(letter) ) { // + - .
+      board[x_y] = new Bond_Modifier(x,y,letter);
     }
-    
-    if( letter === '+' ){
-      if( state !== 'odd' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }      
-      bond_joiners[x_y] = new Joiner(x,y);                                     
+  }
+board_string = board_string + '<br>';
+}
+  
+document.getElementById("board").innerHTML = board_string;
+ 
+//now display objects
+function Display_Objects(){
+  for(var y = 0 ; y <= board.height ; y++){
+    for(var x = 0 ; x <= board.width ; x++){
+      var x_y = X_Y_To_String(x,y);
+      if(typeof board[x_y] === 'undefined'){
+        continue;
+      };
+      if(board[x_y].is_a === 'empty'){
+        document.getElementById(x_y).innerHTML = '&nbsp;';
+      };
+      if(board[x_y].is_a === 'wall'){
+        document.getElementById(x_y).innerHTML = board[x_y].letter;
+      };
+      if(board[x_y].is_a === 'atom'){
+        document.getElementById(x_y).innerHTML = board[x_y].letter;
+      };
+      if(board[x_y].is_a === 'bond'){
+        document.getElementById(x_y).innerHTML = board[x_y].letter;
+      };
+      if(board[x_y].is_a === 'bond_modifier'){
+        document.getElementById(x_y).innerHTML = board[x_y].letter;
+      };
+           
     }
-    
-    if( letter === '.' ){
-      if( state !== 'odd' ){
-        msg = letter + ' in wrong spot ' + x + ',' + y;
-        throw msg;
-      }      
-      bond_twister[x_y] = new Twister(x,y);                                     
-    } 
-    
   }
 }
 
-//me.isA = 'Me';
-console.log( me );
-console.log( me.isA );
+Display_Objects();
+  
+var temp = JSON.stringify(board);
+var temp2 = JSON.parse(temp);
+board = {};
+Object.assign(board,temp2);  
+Display_Objects();
+  
+  var boo = JSON.stringify(atoms);
+  var too = JSON.parse(boo);
+  var soo = {};
+  soo['7_9'] = new Atom(7,9,'H');
+  Object.assign(soo['7_9'] , too['4_2']);
 
+  //console.log( JSON.stringify(board) );
+  console.log( board );
+ 
 //What would a win look like and how do we test for it?
 
 //all atom forces must be transmited in order from source to reciever as nature does this
   
+//undo_atom_array / undo_bond_array : each succesful move, create an array of all the moves : on Z, set pop delete current move
+ //probabl need to make arrays of an array showing to / from [x_y->x_y]  
+
 //main loop
   //check for bonding
   //try to move my atom, recursivly check each joined or ajoining atom
  //y - move
   //are all atoms in the same molecule? win
   
-</script>rsu
+function Key_Input(keyCode)
+{
+var NEWS;
+if (keyCode == 37){ //left 
+  NEWS = 'W';
+}
+  
+if (keyCode == 38){ //up
+  NEWS = 'N';
+}
+  
+if (keyCode == 39){ //right
+  NEWS = 'E';
+}
+  
+if (keyCode == 40){ //down
+  NEWS = 'S';
+}
+  
+if ( me.Can_I_Move( direction[NEWS].x , direction[NEWS].y ) ){
+  //atoms = {}; and rebuild with intended_atom_moves then intended_atom_moves = {};
+
+//references to atoms and bonds, but with new x_y. an external move routine will cycle through intended move object keys. if there is nothing there at x_y, move it, and zero that key, then cycle again until no keys
+//WILL NOT WORK IN A RING? ?
+//so: Wipe all atoms = {}; and rebuild with intended_atom_moves then intended_atom_moves = {};
+  
+//pre_move_atoms[x_y] = atoms[x_y]
+//intended_atom_moves[x+dx,y+dy]
+//then atoms = {}
+//then atoms[x+dx,y+dy] = intended_atom_moves[x+dx,y+dy]
+ // then intended_atom_moves = {}'
+ //pre_move_atoms = {}
+  
+  //ascii board to array, array object
+  
+  //board object will have all methods (not atoms , bonds) , but methods will only respond to type at board x_y? we do this so we can create 
+  // board = {}
+  // board[x_y] = new board_obj(x,y,type) type = H,h,O,N,C (atom)
+    
+  // array, array object -> board.objects [x_y] or [x][y]?
+  //board object can error check for wrong type of object
+  //board objects to manipulate and move
+  //board objects -> display
+  //board objects - > stringify
+  
+ //if fail, use current ascii board to recreate all objects (reprint not requred)
+//if moving, rebuild all ascii board based on moved objects to save , print board again from objects , and rebuild all objects from ascii board
+//undo is simply rebuild and reprint from ascii board
+
+//object.assign(target , source); //target = new atom[x_y] , 
+  
+  
+  atoms = {};
+  for (var key of intended_atom_moves.keys) {
+    atoms[key] = intended_atom_moves[key];
+    }
+  intended_atom_moves = {};
+  }
+  else{
+    intended_atom_moves = {};
+    intended_bond_moves = {};
+  }
+
+//esc : 27
+//r 82
+//z 90
+
+}	
+  
+function Update_Screen(){
+   
+}
+
+</script>
 </body>
 </html>
