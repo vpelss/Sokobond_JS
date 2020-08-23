@@ -77,65 +77,58 @@ W0000000H1H00000W0W
 W0W0W0W0W0W0W0W0W0W0W
 `;  
 
-//0 indicates vacuum only 
+var empty_chars = ['0']; 
 var atom_chars = ['H','h','O','C','N'];
 var even_chars = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
 var modifier_chars = ['+','-','.'];
-//var odd_chars = ['0','+','-','.']; //+ = bond_joiner , - = bond_splitter , . = bond_twister
 var bond_chars = ['1','2','3','4']; 
 var direction = {
- 'N' : { 'x':0 , 'y':-1  },
- 'S' : { 'x':0 , 'y':1  },
- 'E' : { 'x':1 , 'y':0  },
- 'W' : { 'x':-1 , 'y':0  }  
+ 'N' : { 'x':0 , 'y':-2  },
+ 'S' : { 'x':0 , 'y':2  },
+ 'E' : { 'x':2 , 'y':0  },
+ 'W' : { 'x':-2 , 'y':0  }  
 }
-var x_me , y_me; 
+var x_y_me='';
+var x_me=0 , y_me=0; 
 var me = {}; //atom but a special one  
 var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
 //allows us to save board (stringify) then easily restore by parse and object.assign for each spot on board.  
 board.width = 0;
 board.height = 0;  
-//var empty = {};
-//var walls = {};
-var atoms = {}; // atom['x_y'] = new atom(x,y,letter);
-var bonds = {}; //bond['x_y'] = new bond(x,y,number) one kind of bond as we may need to move a horiz to a vertical (disply will change depending on location)
-//var bond_modifiers = {}; //letter = [+-.] x , y is_a
-// - decrease bond # by 1 and split molecules in two if 0 
-// + increase bond # by 1 if both atoms have free valance 
-// . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
-var atoms_intended_move = {}; //atoms_intended_move[xNew_yNew] = atom[x_y];
-var atoms_pre_move = {}; //atoms_pre_move[x_y] = atoms[x_y] need to avoid overwriting an atom when a moving atom goes where a moving atom has not yet been moved
-var bonds_intended_move = {};  //also used to see if two atoms are vying for same spot durin move test!
-var bonds_pre_move = {}; //so we can move atoms and not overwrite atoms yet to move
-
+var move = {}; //intended_move[x_y] = x_new_y_new
+var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to see if 2 atoms trying to occupy same space
+var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
+var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
+  
 function Atom(x , y , letter){ // Constructor
   this.is_a = 'atom';
   this.x = x;
   this.y = y;
-  //this.direction;
-  //this.dx;
-  //this.dy;
   this.letter = letter; //H, h, O, N, C
   this.valence = {'h': 0 , 'H':1 , 'O':2 , 'N':3 , 'C':4}[letter]; //set on create based on letter
    
-   this.Can_I_Move = function(dx,dy){ //also transfers force
-    //this.dx = dx;
-    //this.dy = dy;
+  this.Can_I_Move = function(x,y,dx,dy){ //also transfers force
+    this.x = x;
+    this.y = y; //reset as x,y might be wrong due to a previously failed move
     var x_y = x.toString() + '_' + y.toString(); 
-    var x_y_new = (x+dx).toString() + '_' + (y+dy).toString();
-    if(walls[x_y_new]) {return false} //hit a wall
+    var x_new = x + dx;
+    var y_new = y + dy;
+    var x_y_new = x_new.toString() + '_' + y_new.toString();
+    //if(walls[x_y_new]) {return false} //hit a wall
+    if(board[x_y_new].is_a === 'wall') {return false} //hit a wall
     //are we outside bounds, fail immediately
-    //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
-    //copy atom object to new position in var intended_moves{x_y} = this (if it is already set, fail immediately as two atoms cannot occupy same space) (this will also be used to move atoms if we are good to go) 
+    touched[x_y]=1; //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
+    if(atom_intended_move[x_y_new]) {return false} //and atom is already moving here. fail  
+    atom_intended_move[x_y_new] = 1; //used to move atoms if we are good to go
+     
     //recursivly, to all bonds and atoms in "transfer force direction" (that are not already touched{x_y}=1) and await response that they can move. if one fails, immediately return fail 
     //move()
-     
-    // 
-    atoms_pre_move[x_y] = this; 
-    this.x = this.x + dx;
-    this.y = this.y + dy;
-    atoms_intended_move[x_y_new] = this; //copy ref to this atom and
-    
+
+    //atoms_pre_move[x_y] = this; 
+    this.x = x_new;
+    this.y = y_new;
+    //atoms_intended_move[x_y_new] = this; //copy ref to this atom and
+    move[x_y] = x_y_new; 
     return true; 
     } 
 
@@ -180,6 +173,7 @@ function Bond_Modifier(x,y,letter){
   this.y = y;
   this.letter = letter;  
   return this;
+  // . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
 }
   
 function State(x,y){
@@ -200,16 +194,18 @@ function X_Y_To_String(x,y){
 return x_y = x.toString() + '_' + y.toString();  
 }
   
-function String_To_X_Y( x_y ){//returns [x,y]
-return x_y.split('_');  
+function String_To_X_Y( x_y ){//returns [x,y] int
+var x,y;
+[x,y] = x_y.split('_');  
+return [parseInt(x) , parseInt(y)];  
 }
   
 //build display board and board objects
 input_string = input_string.trim();
 var lines = input_string.split("\n");
 //1st line is my position
-var x_me ,y_me;
-[x_me,y_me] = String_To_X_Y(lines.shift());
+x_y_me = lines.shift();
+[x_me,y_me] = String_To_X_Y(x_y_me);
 var y = -1;
 var board_string = '';
 for(var line of lines){
@@ -224,7 +220,7 @@ for(var line of lines){
     
     Next_Div(x_y , state);
     
-    if(letter === '0') { //0 indicates empty only 
+    if(empty_chars.includes(letter)) { //0 indicates empty only 
       board[x_y] = new Empty(x,y);
     } 
     //bonds
@@ -248,7 +244,8 @@ board_string = board_string + '<br>';
 }
   
 document.getElementById("board").innerHTML = board_string;
- 
+previous_board.push(JSON.stringify(board)); //save first board
+  
 //now display objects
 function Display_Objects(){
   for(var y = 0 ; y <= board.height ; y++){
@@ -278,21 +275,24 @@ function Display_Objects(){
 }
 
 Display_Objects();
-  
+ 
+//test area
 var temp = JSON.stringify(board);
 var temp2 = JSON.parse(temp);
-board = {};
-Object.assign(board,temp2);  
-Display_Objects();
-  
-  var boo = JSON.stringify(atoms);
-  var too = JSON.parse(boo);
-  var soo = {};
-  soo['7_9'] = new Atom(7,9,'H');
-  Object.assign(soo['7_9'] , too['4_2']);
+//board = {};
+//Object.assign(board,temp2); 
 
-  //console.log( JSON.stringify(board) );
-  console.log( board );
+function Reload_Board( json_string ){
+  board = {};
+  Object.assign(board,temp2);
+  //must build atoms and bonds with methods
+  
+}
+ 
+//Display_Objects();
+
+//console.log( JSON.stringify(board) );
+//console.log( board );
  
 //What would a win look like and how do we test for it?
 
@@ -326,48 +326,30 @@ if (keyCode == 40){ //down
   NEWS = 'S';
 }
   
-if ( me.Can_I_Move( direction[NEWS].x , direction[NEWS].y ) ){
-  //atoms = {}; and rebuild with intended_atom_moves then intended_atom_moves = {};
-
-//references to atoms and bonds, but with new x_y. an external move routine will cycle through intended move object keys. if there is nothing there at x_y, move it, and zero that key, then cycle again until no keys
-//WILL NOT WORK IN A RING? ?
-//so: Wipe all atoms = {}; and rebuild with intended_atom_moves then intended_atom_moves = {};
-  
-//pre_move_atoms[x_y] = atoms[x_y]
-//intended_atom_moves[x+dx,y+dy]
-//then atoms = {}
-//then atoms[x+dx,y+dy] = intended_atom_moves[x+dx,y+dy]
- // then intended_atom_moves = {}'
- //pre_move_atoms = {}
-  
-  //ascii board to array, array object
-  
-  //board object will have all methods (not atoms , bonds) , but methods will only respond to type at board x_y? we do this so we can create 
-  // board = {}
-  // board[x_y] = new board_obj(x,y,type) type = H,h,O,N,C (atom)
-    
-  // array, array object -> board.objects [x_y] or [x][y]?
-  //board object can error check for wrong type of object
-  //board objects to manipulate and move
-  //board objects -> display
-  //board objects - > stringify
-  
- //if fail, use current ascii board to recreate all objects (reprint not requred)
-//if moving, rebuild all ascii board based on moved objects to save , print board again from objects , and rebuild all objects from ascii board
-//undo is simply rebuild and reprint from ascii board
-
-//object.assign(target , source); //target = new atom[x_y] , 
-  
-  
-  atoms = {};
-  for (var key of intended_atom_moves.keys) {
-    atoms[key] = intended_atom_moves[key];
-    }
-  intended_atom_moves = {};
+if ( board[x_me+'_'+y_me].Can_I_Move(x_me,y_me,direction[NEWS].x , direction[NEWS].y) ){  
+  //move[x_y] = 'x_y_new'
+  //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y) 
+  //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
+  var temp = {};
+  for(var key in move) { //save temp reference to all moving board objects. then remove the board references (set to empty)
+    temp[key] = board[key];
+    board[key] = new Empty(String_To_X_Y(key));
   }
-  else{
-    intended_atom_moves = {};
-    intended_bond_moves = {};
+  for(var key in move){ 
+    board[move[key]] = temp[key];
+  }
+  previous_board.push(JSON.stringify(board)); //save new board state
+  Display_Objects();
+  x_y_me = move[key];
+  [x_me,y_me] = String_To_X_Y(x_y_me);
+  }
+else{
+    //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
+    board = {};
+    board = previous_board[previous_board.length-1];
+    move = {};
+    atom_intended_move = {};
+    touched = {};
   }
 
 //esc : 27
@@ -375,10 +357,6 @@ if ( me.Can_I_Move( direction[NEWS].x , direction[NEWS].y ) ){
 //z 90
 
 }	
-  
-function Update_Screen(){
-   
-}
 
 </script>
 </body>
