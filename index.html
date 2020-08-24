@@ -69,7 +69,7 @@ z: undo
 <div id=board></div>
 
 <script>  
-var msg; //for errors
+//var msg; //for errors
   
 var input_string = `4_2
 W0W0W0W0W0W0W0W0W
@@ -87,7 +87,7 @@ W0W0W0W0W0W0W0W0W0W0W
 
 var empty_chars = ['0']; 
 var atom_chars = ['H','h','O','C','N'];
-var even_chars = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
+//var even_chars = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
 var modifier_chars = ['+','-','.'];
 var bond_chars = ['1','2','3','4']; 
 var direction = {
@@ -95,12 +95,12 @@ var direction = {
  'S' : { 'x':0 , 'y':1  },
  'E' : { 'x':1 , 'y':0  },
  'W' : { 'x':-1 , 'y':0  }  
-}
+};
 
 var x_y_me='';
 var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
 //allows us to save board (stringify) then easily restore by parse and object.assign for each spot on board.  
-board.x_me=0 
+board.x_me=0;
 board.y_me=0; 
 board.width = 0;
 board.height = 0;  
@@ -129,16 +129,16 @@ function Atom(x , y , letter){ // Constructor
     var x_y_half_step = x_half_step+'_'+y_half_step;
     var x_y_full_step = x_full_step+'_'+y_full_step;
     
-    if(board[x_y_full_step].is_a === 'wall') {return false} //hit a wall
+    if(board[x_y_full_step].is_a === 'wall') {return false;} //hit a wall
     touched[x_y]=1; //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
-    if(atom_intended_move[x_y_full_step]) {return false} //and atom is already moving here. fail  
+    if(atom_intended_move[x_y_full_step]) {return false;} //and atom is already moving here. fail  
     atom_intended_move[x_y_full_step] = 1; //used to move atoms if we are good to go
     
     //see if non bonded atom (not touched), in our way, can move
     if(board[x_y_half_step].is_a !== 'bond'){//no bond in our way
       if(board[x_y_full_step].is_a === 'atom'){//atom in our way
         if(touched[x_y_full_step] !== 1){//hasn't been touched
-          if(!board[x_y_full_step].Can_I_Move(x_full_step,y_full_step,dx,dy)){return false}
+          if(!board[x_y_full_step].Can_I_Move(x_full_step,y_full_step,dx,dy)){return false;}
         }       
       }    
     }
@@ -150,18 +150,18 @@ function Atom(x , y , letter){ // Constructor
     this.y = y_full_step;
     move[x_y] =x_y_full_step; 
     return true; 
-    } 
+    }; 
 
   this.Join_To_Free_Atoms = function(){
-  //recurstive routine like move OR maybe global x_y loop is better and easier!!!
-  }
+  //recursive routine like move OR maybe global x_y loop is better and easier!!!
+  };
   
   this.Return_Free_Valance  = function(){
   //look in all directions and calculate  
-  }
+  };
   
   return this; //return constructor
-};
+}
    
 function Bond(x,y,letter){
   this.is_a = 'bond';
@@ -174,6 +174,7 @@ function Bond(x,y,letter){
   
 function Empty(x,y,letter){
   this.is_a = 'empty';
+  this.letter = letter;
   this.x = x;
   this.y = y; 
   return this;
@@ -201,10 +202,10 @@ function Bond_Modifier(x,y,letter){
 function State(x,y){
 var x_odd = x%2;
 var y_odd = y%2;
-if ( x_odd && y_odd ){return 'hyperspace'}
-if ( !x_odd && !y_odd ){return 'vacuum'}
-if ( x_odd && !y_odd ){return 'bond_vert'}
-if ( !x_odd && y_odd ){return 'bond_horiz'}
+if ( x_odd && y_odd ){return 'hyperspace';}
+if ( !x_odd && !y_odd ){return 'vacuum';}
+if ( x_odd && !y_odd ){return 'bond_vert';}
+if ( !x_odd && y_odd ){return 'bond_horiz';}
 }
   
 //document.getElementById("board").innerHTML = "<h1>dfsdfdsadf</h1>";
@@ -213,7 +214,7 @@ board_string = board_string + '<div id=' + x_y + ' class=' + state + '>&nbsp;</d
 }
 
 function X_Y_To_String(x,y){
-return x_y = x.toString() + '_' + y.toString();  
+return x.toString()+'_'+y.toString();  
 }
   
 function String_To_X_Y( x_y ){//returns [x,y] int
@@ -232,11 +233,11 @@ var y = -1;
 var board_string = '';
 for(var line of lines){
   y++;
-  if(y > board.height) { board.height = y }
+  if(y > board.height) { board.height = y; }
   var x = -1;
   for(var letter of line){
     x++;
-    if(x > board.width) { board.width = x }
+    if(x > board.width) { board.width = x; }
     var state = State(x,y);
     var x_y = X_Y_To_String(x,y);
     
@@ -276,27 +277,27 @@ function Display_Objects(){
       var element = document.getElementById(x_y);
       if(typeof board[x_y] === 'undefined'){
         continue;
-      };
+      }
       if(board[x_y].is_a === 'empty'){
         element.innerHTML = '&nbsp;';
         element.classList.remove("me");
-      };
+      }
       if(board[x_y].is_a === 'wall'){
        element.innerHTML = board[x_y].letter;
-      };
+      }
       if(board[x_y].is_a === 'atom'){
         element.innerHTML = board[x_y].letter;
-        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me")}
+        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me");}
         else{
-          element.classList.remove("me")
+          element.classList.remove("me");
         }
       }
       if(board[x_y].is_a === 'bond'){
         element.innerHTML = board[x_y].letter;
-      };
+      }
       if(board[x_y].is_a === 'bond_modifier'){
         element.innerHTML = board[x_y].letter;
-      };
+      }
           
     }
   }
@@ -350,11 +351,12 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(board.x_me,board.y_me,direction
   previous_board.push(JSON.stringify(board)); //save new board state
   //the_last_board = JSON.stringify(board);//store this move for undo before we move
   var temp = {};
-  for(var key in move) { //save temp reference for all moving board objects. then remove the board references (set to empty)
+  var key;
+  for(key in move) { //save temp reference for all moving board objects. then remove the board references (set to empty)
     temp[key] = board[key];
     board[key] = new Empty(String_To_X_Y(key));
   }
-  for(var key in move){ //now set all moved board references
+  for(key in move){ //now set all moved board references
     board[move[key]] = temp[key];
   }
   //move me
@@ -379,16 +381,16 @@ function Set_Board(json_string){
   for(var key in new_board){
     var x , y;
     [x,y] = String_To_X_Y(key);
-    if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter)}
-    if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter)}
-    if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].letter)}
-    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter)}    
+    if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
+    if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
+    if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].letter);}
+    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
   }
 }
 
 //What would a win look like and how do we test for it?
 
-//all atom forces must be transmited in order from source to reciever 
+//all atom forces must be transmitted in order from source to receiver 
 
   </script>
 </body>
