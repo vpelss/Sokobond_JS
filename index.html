@@ -19,7 +19,10 @@ div{
   -border : solid; 
   -border-width: 1px;  
   }
-
+  
+.me{
+background-color: coral;   
+}
 .vacuum{    
   display: inline-block;
    text-align: center;
@@ -57,7 +60,12 @@ div{
   }
     
 </style>
-  
+arrows: move
+<br>
+r: reset
+<br>
+z: undo
+<p>
 <div id=board></div>
 
 <script>  
@@ -72,7 +80,7 @@ W000000000000000W0W0W0W
 00000000000-00000
 W00000H000H00000W
 00000+00000000000
-W0000000H1H00000W0W
+W0000000H0H00000W0W
 00000000000000000
 W0W0W0W0W0W0W0W0W0W0W
 `;  
@@ -98,6 +106,7 @@ board.width = 0;
 board.height = 0;  
 var move = {}; //intended_move[x_y] = x_new_y_new
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to see if 2 atoms trying to occupy same space
+//var the_last_board = {}; //
 var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
 var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
   
@@ -257,64 +266,56 @@ board_string = board_string + '<br>';
 }
   
 document.getElementById("board").innerHTML = board_string;
-previous_board.push(JSON.stringify(board)); //save first board
+//the_last_board = JSON.stringify(board); //save first board
   
 //now display objects
 function Display_Objects(){
   for(var y = 0 ; y <= board.height ; y++){
     for(var x = 0 ; x <= board.width ; x++){
       var x_y = X_Y_To_String(x,y);
+      var element = document.getElementById(x_y);
       if(typeof board[x_y] === 'undefined'){
         continue;
       };
       if(board[x_y].is_a === 'empty'){
-        document.getElementById(x_y).innerHTML = '&nbsp;';
+        element.innerHTML = '&nbsp;';
+        element.classList.remove("me");
       };
       if(board[x_y].is_a === 'wall'){
-        document.getElementById(x_y).innerHTML = board[x_y].letter;
+       element.innerHTML = board[x_y].letter;
       };
       if(board[x_y].is_a === 'atom'){
-        document.getElementById(x_y).innerHTML = board[x_y].letter;
-      };
+        element.innerHTML = board[x_y].letter;
+        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me")}
+        else{
+          element.classList.remove("me")
+        }
+      }
       if(board[x_y].is_a === 'bond'){
-        document.getElementById(x_y).innerHTML = board[x_y].letter;
+        element.innerHTML = board[x_y].letter;
       };
       if(board[x_y].is_a === 'bond_modifier'){
-        document.getElementById(x_y).innerHTML = board[x_y].letter;
+        element.innerHTML = board[x_y].letter;
       };
-           
+          
     }
   }
 }
 
 Display_Objects();
- 
-//test area
-var temp = JSON.stringify(board);
-var temp2 = JSON.parse(temp);
-
-//console.log( JSON.stringify(board) );
-
-//What would a win look like and how do we test for it?
-
-//all atom forces must be transmited in order from source to reciever as nature does this
-  
-//undo_atom_array / undo_bond_array : each succesful move, create an array of all the moves : on Z, set pop delete current move
- //probabl need to make arrays of an array showing to / from [x_y->x_y]  
-
-//main loop
-  //check for bonding
-  //try to move my atom, recursivly check each joined or ajoining atom
- //y - move
-  //are all atoms in the same molecule? win
   
 function Key_Input(keyCode)
 {
+if (keyCode == 82){ //r 82
+
+}
+  
 if (keyCode == 90){ //z:undo
-  if( previous_board.length > 1){
-  Set_Board( previous_board.pop() );
-  Display_Objects();  
-  }
+  if( previous_board.length > 0){
+    Set_Board( previous_board.pop() );
+    Display_Objects(); 
+    return; //do not hit move routine
+    }
 }
   
 var NEWS;
@@ -334,9 +335,6 @@ if (keyCode == 40){ //down
   NEWS = 'S';
 }
   
-
-  
-
 //clear and get ready for another move
 move = {};
 atom_intended_move = {};
@@ -345,6 +343,8 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(board.x_me,board.y_me,direction
   //move[x_y] = 'x_y_new'
   //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y) 
   //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
+  previous_board.push(JSON.stringify(board)); //save new board state
+  //the_last_board = JSON.stringify(board);//store this move for undo before we move
   var temp = {};
   for(var key in move) { //save temp reference for all moving board objects. then remove the board references (set to empty)
     temp[key] = board[key];
@@ -356,7 +356,6 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(board.x_me,board.y_me,direction
   //move me
   x_y_me = move[board.x_me+'_'+board.y_me];
   [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
-  previous_board.push(JSON.stringify(board)); //save new board state
   Display_Objects();
   }
 else{
@@ -365,9 +364,6 @@ else{
   }
 
 //esc : 27
-//r 82
-
-
 }	
   
 function Set_Board(json_string){
@@ -382,12 +378,14 @@ function Set_Board(json_string){
     if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter)}
     if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter)}
     if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].letter)}
-    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter)}
-    
+    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter)}    
   }
 }
-  
 
-</script>
+//What would a win look like and how do we test for it?
+
+//all atom forces must be transmited in order from source to reciever 
+
+  </script>
 </body>
 </html>
