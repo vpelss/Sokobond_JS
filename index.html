@@ -307,7 +307,11 @@ Display_Objects();
 function Key_Input(keyCode)
 {
 if (keyCode == 82){ //r 82
-
+  while(previous_board.length > 0){
+    Set_Board( previous_board.pop() );
+    Display_Objects(); 
+  }
+  return;
 }
   
 if (keyCode == 90){ //z:undo
