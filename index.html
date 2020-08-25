@@ -67,11 +67,9 @@ r: reset
 z: undo
 <p>
 <div id=board></div>
-
-<script>  
-//var msg; //for errors
-  
-var input_string = `4_2
+<p>
+<textarea id="input_area" rows="4" cols="50">
+4_2
 W0W0W0W0W0W0W0W0W
 00000000000000000
 W000C00000000000W
@@ -80,16 +78,28 @@ W000000000000000W0W0W0W
 00000000000-00000
 W00000H000H00000W
 00000+00000000000
-W0000000H0H00000W0W
+W0000000H1H00000W0W
 00000000000000000
 W0W0W0W0W0W0W0W0W0W0W
-`;  
-
+</textarea>
+  
+  <form action="#">
+  <input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
+</form>
+  
+<script>  
+var error_msg = '';
+var input_string;
 var empty_chars = ['0']; 
 var atom_chars = ['H','h','O','C','N'];
-//var even_chars = atom_chars.concat( ['0','W'] ); //E=empty, W=wall, H=hydrogen, h=helium, O=oxygen, C=carbon, N=nitrogen 
+var wall_chars = ['W'];
 var modifier_chars = ['+','-','.'];
-var bond_chars = ['1','2','3','4']; 
+var bond_chars = ['1','2','3','4'];
+var validate_board_pos = {}  //note keys match state/class so we can do build board error checking
+validate_board_pos['hyperspace'] = empty_chars.concat(modifier_chars);
+validate_board_pos['vacuum'] = empty_chars.concat(atom_chars,wall_chars);
+validate_board_pos['bond_vert'] = empty_chars.concat(bond_chars);
+validate_board_pos['bond_horiz'] = empty_chars.concat(bond_chars);    
 var direction = {
  'N' : { 'x':0 , 'y':-1  },
  'S' : { 'x':0 , 'y':1  },
@@ -99,17 +109,81 @@ var direction = {
 
 var x_y_me='';
 var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
-//allows us to save board (stringify) then easily restore by parse and object.assign for each spot on board.  
+//allows us to save JSON.stringify(board) then easily rebuild each object on board.  
+var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move is succesful
+var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to see if 2 atoms trying to occupy same space
+var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
+var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
+
+Build_Puzzle(document.getElementById("input_area").value);
+  
+function X_Y_To_String(x,y){
+return x.toString()+'_'+y.toString();  
+}
+  
+function String_To_X_Y( x_y ){//returns [x,y] int
+var x,y;
+[x,y] = x_y.split('_');  
+return [parseInt(x) , parseInt(y)];  
+}
+  
+function Build_Puzzle(input_string){ //build display board and board objects
+board = {};
 board.x_me=0;
 board.y_me=0; 
 board.width = 0;
-board.height = 0;  
-var move = {}; //intended_move[x_y] = x_new_y_new
-var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to see if 2 atoms trying to occupy same space
-//var the_last_board = {}; //
-var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
-var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
-  
+board.height = 0; 
+move = {};
+atom_intended_move = {};
+previous_board = [];
+touched = {};
+                    
+input_string = input_string.trim();
+var lines = input_string.split("\n"); //1st line is my position
+x_y_me = lines.shift();
+[board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+var y = -1;
+var board_string = '';
+for(var line of lines){
+  y++;
+  if(y > board.height) { board.height = y; }
+  var x = -1;
+  for(var letter of line){
+    x++;
+    if(x > board.width) { board.width = x; }
+    var state = State(x,y);
+    if(!validate_board_pos[state].includes(letter)){
+       error_msg = 'Board error. Letter ' + letter + ' not allowed in ' + state + ' position';
+       //alert(error_msg);
+       console.log(error_msg);
+    }
+    var x_y = X_Y_To_String(x,y);
+    
+    board_string = board_string + Next_Div(x_y , state); //create the div board
+    
+    //create the board[x_y] objects
+    if(empty_chars.includes(letter)) { //0 indicates empty only 
+      board[x_y] = new Empty(x,y);
+    } 
+    if( bond_chars.includes(letter) ) {
+      board[x_y] = new Bond(x,y,letter);
+    }
+    if( wall_chars.includes(letter) ) {
+      board[x_y] = new Wall(x,y,letter);
+    }
+    if( atom_chars.includes(letter) ) {
+      board[x_y] = new Atom(x,y,letter);
+    } 
+    if( modifier_chars.includes(letter) ) { // + - .
+      board[x_y] = new Bond_Modifier(x,y,letter);
+    }
+  }
+board_string = board_string + '<br>';
+}
+document.getElementById("board").innerHTML = board_string;
+Display_Objects();
+}
+ 
 function Atom(x , y , letter){ // Constructor
   this.is_a = 'atom';
   this.x = x;
@@ -208,68 +282,10 @@ if ( x_odd && !y_odd ){return 'bond_vert';}
 if ( !x_odd && y_odd ){return 'bond_horiz';}
 }
   
-//document.getElementById("board").innerHTML = "<h1>dfsdfdsadf</h1>";
 function Next_Div(x_y , state){
-board_string = board_string + '<div id=' + x_y + ' class=' + state + '>&nbsp;</div>';  
+return '<div id=' + x_y + ' class=' + state + '>&nbsp;</div>';  
 }
-
-function X_Y_To_String(x,y){
-return x.toString()+'_'+y.toString();  
-}
-  
-function String_To_X_Y( x_y ){//returns [x,y] int
-var x,y;
-[x,y] = x_y.split('_');  
-return [parseInt(x) , parseInt(y)];  
-}
-  
-//build display board and board objects
-input_string = input_string.trim();
-var lines = input_string.split("\n");
-//1st line is my position
-x_y_me = lines.shift();
-[board.x_me,board.y_me] = String_To_X_Y(x_y_me);
-var y = -1;
-var board_string = '';
-for(var line of lines){
-  y++;
-  if(y > board.height) { board.height = y; }
-  var x = -1;
-  for(var letter of line){
-    x++;
-    if(x > board.width) { board.width = x; }
-    var state = State(x,y);
-    var x_y = X_Y_To_String(x,y);
-    
-    Next_Div(x_y , state);
-    
-    if(empty_chars.includes(letter)) { //0 indicates empty only 
-      board[x_y] = new Empty(x,y);
-    } 
-    //bonds
-    if( bond_chars.includes(letter) ) {
-      board[x_y] = new Bond(x,y,letter);
-    }
-    //walls
-    if( letter === 'W' ) {
-      board[x_y] = new Wall(x,y,letter);
-    }
-    //atoms
-    if( atom_chars.includes(letter) ) {
-      board[x_y] = new Atom(x,y,letter);
-    }
-        
-    if( modifier_chars.includes(letter) ) { // + - .
-      board[x_y] = new Bond_Modifier(x,y,letter);
-    }
-  }
-board_string = board_string + '<br>';
-}
-  
-document.getElementById("board").innerHTML = board_string;
-//the_last_board = JSON.stringify(board); //save first board
-  
-//now display objects
+   
 function Display_Objects(){
   for(var y = 0 ; y <= board.height ; y++){
     for(var x = 0 ; x <= board.width ; x++){
@@ -303,10 +319,12 @@ function Display_Objects(){
   }
 }
 
-Display_Objects();
-  
 function Key_Input(keyCode)
-{
+{ 
+if(document.activeElement === document.getElementById('input_area')){
+  return;
+}
+  
 if (keyCode == 82){ //r 82
   while(previous_board.length > 0){
     Set_Board( previous_board.pop() );
@@ -322,24 +340,30 @@ if (keyCode == 90){ //z:undo
     return; //do not hit move routine
     }
 }
-  
+ 
+var move_key_pressed = false;
 var NEWS;
 if (keyCode == 37){ //left 
   NEWS = 'W';
+  move_key_pressed = true;
 }
   
 if (keyCode == 38){ //up
   NEWS = 'N';
+  move_key_pressed = true;
 }
   
 if (keyCode == 39){ //right
   NEWS = 'E';
+  move_key_pressed = true;
 }
   
 if (keyCode == 40){ //down
   NEWS = 'S';
+  move_key_pressed = true;
 }
   
+if(move_key_pressed){  
 //clear and get ready for another move
 move = {};
 atom_intended_move = {};
@@ -369,6 +393,9 @@ else{
     Set_Board( previous_board[previous_board.length-1] );
   }
 
+}
+//check for atoms that can bond
+  
 //esc : 27
 }	
   
