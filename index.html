@@ -206,6 +206,7 @@ document.getElementById("board").innerHTML = board_string;
 if(error_msg !== ''){
  alert(error_msg); 
 }
+Join_Free_Atoms();
 Display_Objects();
 }
  
@@ -493,11 +494,7 @@ else{
 }
   
 //we may have moved all atoms. for every atom, check for atoms that can bond
-for(var key in board){
-  if(board[key].is_a === 'atom'){
-    board[key].Join_To_Free_Atoms();
-  }
-}
+Join_Free_Atoms();
 
 //previous_board.push(JSON.stringify(board)); //save new board state
   
@@ -505,6 +502,14 @@ Display_Objects();
   
 //esc : 27
 }	
+  
+function Join_Free_Atoms(){
+  for(var key in board){
+    if(board[key].is_a === 'atom'){
+      board[key].Join_To_Free_Atoms();
+    }
+  }  
+}
   
 function Set_Board(json_string){
   var new_board = JSON.parse(json_string);
