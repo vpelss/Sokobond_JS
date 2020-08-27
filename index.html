@@ -3,7 +3,7 @@
 <meta name="robots" content="noindex">
 <html>
 <head>
-<meta name="description" content="Sokobond JS">
+<meta name="description" content="Sokobond JS Chemical Zen">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Sokobond JS</title>
@@ -11,7 +11,8 @@
 
 <body  ONKEYUP="Key_Input(event.keyCode);">
   
-<h4>Sokobond JS</h4>  
+<h4><meta name="description" content="Sokobond JS Chemical Zen">
+</h4>  
 
 <style>  
 div{ 
@@ -78,7 +79,7 @@ W00000H000000000W0W0W0W
 00000000000-00000
 W00000H000H00000W
 00000+00000000000
-W0000000H1H00000W0W
+W0000000H0H00000W0W
 00000000000000000
 W0W0W0W0W0W0W0W0W0W0W
 </textarea>
@@ -106,6 +107,28 @@ var direction = {
  'E' : { 'x':1 , 'y':0  },
  'W' : { 'x':-1 , 'y':0  }  
 };
+ 
+function Get_NEWS(x,y){
+  var news = {};
+  for(var key in direction){
+      var dx = direction[key].x;
+      var dy = direction[key].y;
+      var x_half_step = x + dx;
+      var y_half_step = y + dy;
+      var x_full_step = x + dx + dx;
+      var y_full_step = y + dy + dy;
+      var x_y_half_step = x_half_step+'_'+y_half_step;
+      var x_y_full_step = x_full_step+'_'+y_full_step;
+      news[key] = {};
+      news[key]['x_half_step'] = x_half_step;
+      news[key]['y_half_step'] = y_half_step;    
+      news[key]['x_full_step'] = x_full_step;
+      news[key]['y_full_step'] = y_full_step;    
+      news[key]['x_y_half_step'] = x_y_half_step;
+      news[key]['x_y_full_step'] = x_y_full_step;
+  }
+return news; 
+}
 
 var x_y_me='';
 var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
@@ -194,37 +217,47 @@ function Atom(x , y , letter){ // Constructor
   this.valence = {'h': 0 , 'H':1 , 'O':2 , 'N':3 , 'C':4}[letter]; //set on create based on letter
   //this.free_valence = this.valence;
   
-  this.Can_I_Move = function(x,y,dx,dy){ //also transfers force
-    this.x = x;
-    this.y = y; //reset as x,y might be wrong due to a previously failed move
-    var x_y = x.toString() + '_' + y.toString(); 
-    var x_half_step = x + dx;
-    var y_half_step = y + dy;
-    var x_full_step = x + dx + dx;
-    var y_full_step = y + dy + dy;
-    var x_y_half_step = x_half_step+'_'+y_half_step;
-    var x_y_full_step = x_full_step+'_'+y_full_step;
+  //this.Can_I_Move = function(x,y,dx,dy){ //also transfers force
+  this.Can_I_Move = function(NEWS){ //also transfers force
+    var dx = direction[NEWS].x;
+    var dy = direction[NEWS].y;
+    var x_y = this.x.toString() + '_' + this.y.toString(); 
+    var all_news = Get_NEWS(this.x,this.y);
+    var x_y_half_step = all_news[NEWS].x_y_half_step;
+    var x_y_full_step =  all_news[NEWS].x_y_full_step;
     
-    if(board[x_y_full_step].is_a === 'wall') {return false;} //hit a wall
+    //1. check for a wall hit
+    if(board[x_y_full_step].is_a === 'wall') {return false;} 
     touched[x_y]=1; //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
+    //2. check to see if something else is moving to the same location
     if(atom_intended_move[x_y_full_step]) {return false;} //and atom is already moving here. fail  
-    atom_intended_move[x_y_full_step] = 1; //used to move atoms if we are good to go
+    //3. state atom's intention of moving here 
+    atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
     
-    //see if non bonded atom (not touched), in our way, can move
+    //4. see if non bonded atom,not touched, is in our way, and see if it can move
     if(board[x_y_half_step].is_a !== 'bond'){//no bond in our way
       if(board[x_y_full_step].is_a === 'atom'){//atom in our way
         if(touched[x_y_full_step] !== 1){//hasn't been touched
-          if(!board[x_y_full_step].Can_I_Move(x_full_step,y_full_step,dx,dy)){return false;}
+          if(!board[x_y_full_step].Can_I_Move(NEWS)){return false;}
         }       
       }    
     }
     
     //see if bonds (not touched) can move 
-
+    var all_news =  Get_NEWS(this.x,this.y) 
+    for(var key in all_news){
+      let x_y_half_step = all_news[key].x_y_half_step;
+      let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
+      if(board[x_y_half_step].is_a === 'bond'){//a bond can only be crossed once, so no need to chech if touched
+        if(!board[x_y_half_step].Can_I_Move(NEWS , receiving_atom)){return false;}
+        //
+      }
+    }
+        
     //if here, all downstream tests are good to move. but this does not mean that the move will not fail. 
-    this.x = x_full_step;
-    this.y = y_full_step;
-    move[x_y] =x_y_full_step; 
+    this.x = this.x + dx + dx;
+    this.y = this.y + dy + dy;
+    move[x_y] = x_y_full_step; //used to move atoms if we are good to go
     return true; 
     }; 
 
@@ -232,16 +265,14 @@ function Atom(x , y , letter){ // Constructor
     //Return_Free_Valence of this atom
     var free_valence = this.Return_Free_Valence();
     //for adjacent atoms in direction with no bond && adjacent atoms with free valence , create a bond until my free_valence === 0
-    for(var key in direction){
+    //for(var key in direction){
+    var all_news =  Get_NEWS(this.x,this.y) 
+    for(var key in all_news){
       if(free_valence <= 0){return;}
-      var dx = direction[key].x;
-      var dy = direction[key].y;
-      var x_half_step = this.x + dx;
-      var y_half_step = this.y + dy;
-      var x_full_step = this.x + dx + dx;
-      var y_full_step = this.y + dy + dy;
-      var x_y_half_step = x_half_step+'_'+y_half_step;
-      var x_y_full_step = x_full_step+'_'+y_full_step;
+      var x_half_step = all_news[key].x_half_step;
+      var y_half_step = all_news[key].y_half_step;
+      var x_y_half_step = all_news[key].x_y_half_step;
+      var x_y_full_step = all_news[key].x_y_full_step;
       if(board[x_y_full_step].is_a === 'atom'){
         if(board[x_y_full_step].Return_Free_Valence() > 0){
           if(board[x_y_half_step].is_a === 'empty'){
@@ -259,12 +290,11 @@ function Atom(x , y , letter){ // Constructor
     var free_valence;
     var x_test;
     var y_test;
-    for(var key in direction){
-      x_test = this.x + direction[key].x;
-      y_test = this.y + direction[key].y;
-      x_y = x_test+'_'+y_test;
+    var all_news =  Get_NEWS(this.x,this.y) 
+    for(var key in all_news){
+      var x_y = all_news[key].x_y_half_step;
       if(board[x_y].is_a === 'bond'){
-        sum = sum + board[x_test+'_'+y_test].value;  
+        sum = sum + board[x_y].value;  
       }
     }
     free_valence = this.valence - sum; 
@@ -283,6 +313,32 @@ function Bond(x,y,letter){
   this.y = y;
   this.letter = letter;
   this.value = parseInt(letter); 
+  
+  this.Can_I_Move = function(NEWS , receiving_atom){ //also transfers force
+    var dx = direction[NEWS].x;
+    var dy = direction[NEWS].y;
+    var x_y = this.x.toString() + '_' + this.y.toString(); 
+    var all_news = Get_NEWS(this.x,this.y);
+    var x_y_half_step = all_news[NEWS].x_y_half_step;
+    var x_y_full_step =  all_news[NEWS].x_y_full_step;
+    touched[x_y]=1; //don't use this for bonds 
+    //1.is there a bond_modifyer in the path - y ?
+    if(board[x_y_half_step].is_a === 'bond_modifyer'){
+      
+    }
+    //if receiving atom already touched just return true
+    if(touched[receiving_atom]){ return true; }
+    
+    //transmit move / force to receiving atom
+    if(!board[receiving_atom].Can_I_Move(NEWS)){return false;}
+    
+    //move bond
+    this.x = this.x + dx + dx;
+    this.y = this.y + dy + dy;
+    move[x_y] = x_y_full_step; //used to move atoms if we are good to go
+    return true;     
+  }
+   
   return this;
 }
   
@@ -408,7 +464,8 @@ if(move_key_pressed){
 move = {};
 atom_intended_move = {};
 touched = {};
-if ( board[board.x_me+'_'+board.y_me].Can_I_Move(board.x_me,board.y_me,direction[NEWS].x , direction[NEWS].y) ){  
+//if ( board[board.x_me+'_'+board.y_me].Can_I_Move(board.x_me,board.y_me,direction[NEWS].x , direction[NEWS].y) ){  
+if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){  
   //move[x_y] = 'x_y_new'
   //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y) 
   //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
