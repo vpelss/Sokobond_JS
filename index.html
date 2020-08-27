@@ -1,26 +1,13 @@
 <!DOCTYPE html>
 
-<meta name="robots" content="noindex">
 <html>
 <head>
 <meta name="description" content="Sokobond JS Chemical Zen">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Sokobond JS - Chemical Zen</title>
-</head>
-
-<body  ONKEYUP="Key_Input(event.keyCode);">
   
-<h4><meta name="description" content="Sokobond JS Chemical Zen">
-</h4>  
-
-<style>  
-div{ 
-  -float: left;
-  -border : solid; 
-  -border-width: 1px;  
-  }
-  
+<style>    
 .me{
 background-color: coral;   
 }
@@ -39,7 +26,7 @@ background-color: coral;
   display: inline-block;
    text-align: center;
   
-  width: 15px; 
+  width: 5px; 
   height: 50px;
   }
 
@@ -49,46 +36,74 @@ background-color: coral;
   
   padding: 1px;
   width: 50px;
-  height: 15px;     
+  height: 5px;     
   }
   
 .hyperspace{
   display: inline-block;
    text-align: center;
   
-  width: 15px;  
-  height: 15px;   
+  width: 5px;  
+  height: 5px;   
   }
+  
+.wall{
+  background-color: blue;
+}
     
+.br {
+height: 0px;
+width:100%;
+display:block;
+position:relative;
+padding:0px;0px0px;0px
+}
+  
 </style>
-arrows: move
-<br>
+</head>
+
+<body  ONKEYUP="Key_Input(event.keyCode);">
+<h4>Sokobond JS Chemical Zen</h4>  
+
+arrows: move 
+&nbsp;&nbsp;&nbsp;
 r: reset
-<br>
+&nbsp;&nbsp;&nbsp;
 z: undo
-<p>
+<p></p>
 <div id=board></div>
-<p>
+<p></p>
 <textarea id="input_area" rows="4" cols="50">
-4_2
+4_4
 W0W0W0W0W0W0W0W0W
 00000000000000000
-W000C000H0000000W
+W000000000000000W
+00000000000000000
+W000C000C00000H0W
 0000000000000.000
-W00000H000000000W0W0W0W
+W00000H000000000W
 00000000000-00000
 W00000H000H00000W
 00000+00000000000
-W0000000H0H00000W0W
+W0000000H0H00000W
 00000000000000000
-W0W0W0W0W0W0W0W0W0W0W
+W000000000000000W
+00000000000000000
+W000000000H00000W
+00000000000000000
+W0000000h0H00000W
+00000000000000000
+W000000000000000W
+00000000000000000
+W0W0W0W0W0W0W0W0W
 </textarea>
   
-  <form action="#">
-  <input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
+<form action="#">
+<input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
 </form>
   
 <script>  
+//global vars ----------------------
 var error_msg = '';
 var input_string;
 var empty_chars = ['0']; 
@@ -108,28 +123,6 @@ var direction = {
  'W' : { 'x':-1 , 'y':0  }  
 };
  
-function Get_NEWS(x,y){
-  var news = {};
-  for(var key in direction){
-      var dx = direction[key].x;
-      var dy = direction[key].y;
-      var x_half_step = x + dx;
-      var y_half_step = y + dy;
-      var x_full_step = x + dx + dx;
-      var y_full_step = y + dy + dy;
-      var x_y_half_step = x_half_step+'_'+y_half_step;
-      var x_y_full_step = x_full_step+'_'+y_full_step;
-      news[key] = {};
-      news[key]['x_half_step'] = x_half_step;
-      news[key]['y_half_step'] = y_half_step;    
-      news[key]['x_full_step'] = x_full_step;
-      news[key]['y_full_step'] = y_full_step;    
-      news[key]['x_y_half_step'] = x_y_half_step;
-      news[key]['x_y_full_step'] = x_y_full_step;
-  }
-return news; 
-}
-
 var x_y_me='';
 var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.  
@@ -139,77 +132,9 @@ var previous_board = []; //array for undo and failed moves to reset board. it wi
 var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
 
 Build_Puzzle(document.getElementById("input_area").value);
-  
-function X_Y_To_String(x,y){
-return x.toString()+'_'+y.toString();  
-}
-  
-function String_To_X_Y( x_y ){//returns [x,y] int
-var x,y;
-[x,y] = x_y.split('_');  
-return [parseInt(x) , parseInt(y)];  
-}
-  
-function Build_Puzzle(input_string){ //build display board and board objects
-board = {};
-board.x_me=0;
-board.y_me=0; 
-board.width = 0;
-board.height = 0; 
-move = {};
-atom_intended_move = {};
-previous_board = [];
-touched = {};
-                    
-input_string = input_string.trim();
-var lines = input_string.split("\n"); //1st line is my position
-x_y_me = lines.shift();
-[board.x_me,board.y_me] = String_To_X_Y(x_y_me);
-var y = -1;
-var board_string = '';
-for(var line of lines){
-  y++;
-  if(y > board.height) { board.height = y; }
-  var x = -1;
-  for(var letter of line){
-    x++;
-    if(x > board.width) { board.width = x; }
-    var state = State(x,y);
-    var x_y = X_Y_To_String(x,y);    
-    if(!validate_board_pos[state].includes(letter)){
-       error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
-       //alert(error_msg);
-       console.log(error_msg);
-    }  
-    board_string = board_string + Next_Div(x_y , state); //create the div board
-    
-    //create the board[x_y] objects
-    if(empty_chars.includes(letter)) { //0 indicates empty only 
-      board[x_y] = new Empty(x,y);
-    } 
-    if( bond_chars.includes(letter) ) {
-      board[x_y] = new Bond(x,y,letter);
-    }
-    if( wall_chars.includes(letter) ) {
-      board[x_y] = new Wall(x,y,letter);
-    }
-    if( atom_chars.includes(letter) ) {
-      board[x_y] = new Atom(x,y,letter);
-    } 
-    if( modifier_chars.includes(letter) ) { // + - .
-      board[x_y] = new Bond_Modifier(x,y,letter);
-    }
-  }
-board_string = board_string + '<br>';
-}
-document.getElementById("board").innerHTML = board_string;
-if(error_msg !== ''){
- alert(error_msg); 
-}
-Join_Free_Atoms();
-Display_Objects();
-}
  
+//constructors ------------------------
+  
 function Atom(x , y , letter){ // Constructor
   this.is_a = 'atom';
   this.x = x;
@@ -370,57 +295,15 @@ function Bond_Modifier(x,y,letter){
   // . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
 }
   
-function State(x,y){
-var x_odd = x%2;
-var y_odd = y%2;
-if ( x_odd && y_odd ){return 'hyperspace';}
-if ( !x_odd && !y_odd ){return 'vacuum';}
-if ( x_odd && !y_odd ){return 'bond_vert';}
-if ( !x_odd && y_odd ){return 'bond_horiz';}
-}
+//main routine--------------------------
   
-function Next_Div(x_y , state){
-return '<div id=' + x_y + ' class=' + state + '>&nbsp;</div>';  
-}
-   
-function Display_Objects(){
-  for(var y = 0 ; y <= board.height ; y++){
-    for(var x = 0 ; x <= board.width ; x++){
-      var x_y = X_Y_To_String(x,y);
-      var element = document.getElementById(x_y);
-      if(typeof board[x_y] === 'undefined'){
-        continue;
-      }
-      if(board[x_y].is_a === 'empty'){
-        element.innerHTML = '&nbsp;';
-        element.classList.remove("me");
-      }
-      if(board[x_y].is_a === 'wall'){
-       element.innerHTML = board[x_y].letter;
-      }
-      if(board[x_y].is_a === 'atom'){
-        element.innerHTML = board[x_y].letter;
-        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me");}
-        else{
-          element.classList.remove("me");
-        }
-      }
-      if(board[x_y].is_a === 'bond'){
-        element.innerHTML = board[x_y].letter;
-      }
-      if(board[x_y].is_a === 'bond_modifier'){
-        element.innerHTML = board[x_y].letter;
-      }
-          
-    }
-  }
-}
-
 function Key_Input(keyCode)
 { 
 if(document.activeElement === document.getElementById('input_area')){
   return;
 }
+    
+//esc : 27
   
 if (keyCode == 82){ //r 82
   while(previous_board.length > 0){
@@ -493,24 +376,73 @@ else{
 
 }
   
-//we may have moved all atoms. for every atom, check for atoms that can bond
-Join_Free_Atoms();
-
-//previous_board.push(JSON.stringify(board)); //save new board state
-  
+Join_Free_Atoms(); //for every atom, check for atoms that can bond
 Display_Objects();
-  
-//esc : 27
 }	
+
+//board functions -----------------
   
-function Join_Free_Atoms(){
-  for(var key in board){
-    if(board[key].is_a === 'atom'){
-      board[key].Join_To_Free_Atoms();
+function Build_Puzzle(input_string){ //build display board and board objects
+board = {};
+board.x_me=0;
+board.y_me=0; 
+board.width = 0;
+board.height = 0; 
+move = {};
+atom_intended_move = {};
+previous_board = [];
+touched = {};
+                    
+input_string = input_string.trim();
+var lines = input_string.split("\n"); //1st line is my position
+x_y_me = lines.shift();
+[board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+var y = -1;
+var board_string = '';
+for(var line of lines){
+  y++;
+  if(y > board.height) { board.height = y; }
+  var x = -1;
+  for(var letter of line){
+    x++;
+    if(x > board.width) { board.width = x; }
+    var state = State(x,y);
+    var x_y = X_Y_To_String(x,y);    
+    if(!validate_board_pos[state].includes(letter)){
+       error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
+       //alert(error_msg);
+       console.log(error_msg);
+    }  
+    board_string = board_string + Next_Div(x_y , state); //create the div board
+    
+    //create the board[x_y] objects
+    if(empty_chars.includes(letter)) { //0 indicates empty only 
+      board[x_y] = new Empty(x,y);
+    } 
+    if( bond_chars.includes(letter) ) {
+      board[x_y] = new Bond(x,y,letter);
     }
-  }  
+    if( wall_chars.includes(letter) ) {
+      board[x_y] = new Wall(x,y,letter);
+    }
+    if( atom_chars.includes(letter) ) {
+      board[x_y] = new Atom(x,y,letter);
+    } 
+    if( modifier_chars.includes(letter) ) { // + - .
+      board[x_y] = new Bond_Modifier(x,y,letter);
+    }
+  }
+//board_string = board_string + '<br>';
+board_string = board_string + '<div class="br"></div>';
 }
-  
+document.getElementById("board").innerHTML = board_string;
+if(error_msg !== ''){
+ alert(error_msg); 
+}
+Join_Free_Atoms();
+Display_Objects();
+}
+ 
 function Set_Board(json_string){
   var new_board = JSON.parse(json_string);
   board.x_me = new_board.x_me;
@@ -526,7 +458,96 @@ function Set_Board(json_string){
     if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
   }
 }
+  
+function Display_Objects(){
+  for(var y = 0 ; y <= board.height ; y++){
+    for(var x = 0 ; x <= board.width ; x++){
+      var x_y = X_Y_To_String(x,y);
+      var element = document.getElementById(x_y);
+      if(typeof board[x_y] === 'undefined'){
+        continue;
+      }
+      if(board[x_y].is_a === 'empty'){
+        element.innerHTML = '&nbsp;';
+        element.classList.remove("me");
+      }
+      if(board[x_y].is_a === 'wall'){
+       element.innerHTML = board[x_y].letter;
+       element.classList.add("wall");
+      }
+      if(board[x_y].is_a === 'atom'){
+        element.innerHTML = board[x_y].letter;
+        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me");}
+        else{
+          element.classList.remove("me");
+        }
+      }
+      if(board[x_y].is_a === 'bond'){
+        element.innerHTML = board[x_y].letter;
+      }
+      if(board[x_y].is_a === 'bond_modifier'){
+        element.innerHTML = board[x_y].letter;
+      }
+          
+    }
+  }
+}
 
+//general functions -------------------------
+
+function Join_Free_Atoms(){
+  for(var key in board){
+    if(board[key].is_a === 'atom'){
+      board[key].Join_To_Free_Atoms();
+    }
+  }  
+}
+  
+function X_Y_To_String(x,y){
+  return x.toString()+'_'+y.toString();  
+}
+  
+function String_To_X_Y( x_y ){//returns [x,y] int
+  var x,y;
+  [x,y] = x_y.split('_');  
+  return [parseInt(x) , parseInt(y)];  
+}
+   
+function Next_Div(x_y , state){
+  return '<div id=' + x_y + ' class=' + state + '></div>';  
+}  
+  
+function Get_NEWS(x,y){
+  var news = {};
+  for(var key in direction){
+      var dx = direction[key].x;
+      var dy = direction[key].y;
+      var x_half_step = x + dx;
+      var y_half_step = y + dy;
+      var x_full_step = x + dx + dx;
+      var y_full_step = y + dy + dy;
+      var x_y_half_step = x_half_step+'_'+y_half_step;
+      var x_y_full_step = x_full_step+'_'+y_full_step;
+      news[key] = {};
+      news[key]['x_half_step'] = x_half_step;
+      news[key]['y_half_step'] = y_half_step;    
+      news[key]['x_full_step'] = x_full_step;
+      news[key]['y_full_step'] = y_full_step;    
+      news[key]['x_y_half_step'] = x_y_half_step;
+      news[key]['x_y_full_step'] = x_y_full_step;
+  }
+return news; 
+}
+  
+function State(x,y){
+  var x_odd = x%2;
+  var y_odd = y%2;
+  if ( x_odd && y_odd ){return 'hyperspace';}
+  if ( !x_odd && !y_odd ){return 'vacuum';}
+  if ( x_odd && !y_odd ){return 'bond_vert';}
+  if ( !x_odd && y_odd ){return 'bond_horiz';}
+}
+  
 //What would a win look like and how do we test for it?
 
 //all atom forces must be transmitted in order from source to receiver 
