@@ -33,13 +33,11 @@ td {
   margin: 0px;
   padding: 0px;  
   border-width:0px;
-  border : solid; 
-  border-width: 1px;
+  -border : solid; 
+  -border-width: 1px;
 }  
   
 svg{
-  -top : 0px;
-  -left: 0px;
  display: block;       
 }
   
@@ -81,8 +79,6 @@ svg{
 </head>
 
 <body  ONKEYUP="Key_Input(event.keyCode);">
-<h4>Sokobond JS Chemical Zen</h4>  
-
 arrows: move 
 &nbsp;&nbsp;&nbsp;
 r: reset
@@ -177,6 +173,8 @@ var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to 
 var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
 var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
 
+//graphics area  
+  
 var svg = {};  
 svg['h'] = `<svg width="50" height="50" viewBox="0 0 50 50">
 <circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
@@ -201,6 +199,36 @@ svg['N'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
 svg['C'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
 <circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
+</svg>`;
+  
+svg['1bond_vert'] = `<svg
+   viewBox="0 0 1.3229166 13.229167"
+   height="50"
+   width="5"> 
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <path
+       id="path18"
+       d="M 0,6.5990194 C 1.3696078,6.5834566 1.3696078,6.5834566 1.3696078,6.5834566"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+</svg>`;  
+  
+svg['1bond_horiz'] = `<svg
+   viewBox="0 0 13.229166 1.3229167"
+   height="5"
+   width="50">
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26571px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 6.7158266,0.01124925 v 1.32741645 0"
+       id="path91-9" />
+  </g>
 </svg>`;
   
 Build_Puzzle(document.getElementById("input_area").value);
@@ -309,6 +337,7 @@ function Bond(x,y,letter){
   this.x = x;
   this.y = y;
   this.letter = letter;
+  //this.state = state; //this helps us choose correct bond graphics!
   this.value = parseInt(letter); 
   
   this.Can_I_Move = function(NEWS , receiving_atom){ //also transfers force
@@ -553,7 +582,9 @@ function Display_Objects(){
         }
       }
       if(board[x_y].is_a === 'bond'){
-        element.innerHTML = board[x_y].letter;
+        let state = document.getElementById(x_y).className; //are we bond_horiz or bon_vert
+         //element.innerHTML = board[x_y].letter;
+        element.innerHTML = svg[board[x_y].letter + state];
       }
       if(board[x_y].is_a === 'bond_modifier'){
         element.innerHTML = board[x_y].letter;
