@@ -30,11 +30,11 @@ tr {
 }
   
 td {
-margin: 0px;
-padding: 0px;  
-border-width:0px;
-border : solid; 
-border-width: 0px;
+  margin: 0px;
+  padding: 0px;  
+  border-width:0px;
+  border : solid; 
+  border-width: 1px;
 }  
   
 svg{
@@ -46,7 +46,7 @@ svg{
 .me{
   background-color: coral;   
 }
-  
+ 
 .vacuum{
   width: 50px;
   height: 50px;
@@ -75,8 +75,6 @@ svg{
 }
   
 .atom{
-  background-image: url("https://www.emogic.com/Sokobond_JS/circle1.gif"); 
-  background-repeat: no-repeat;
 }
   
 </style>
@@ -94,26 +92,22 @@ z: undo
 <div id=board></div>
 <p></p>
 <textarea id="input_area" rows="4" cols="50">
-4_4
+8_8
 W0W0W0W0W0W0W0W0W
 00000000000000000
-W000000000000000W
+W000h000h000h000W
 00000000000000000
-W000C000C00000H0W
-0000000000000.000
-W00000H000000000W
-00000000000-00000
 W00000H000H00000W
-00000+00000000000
-W0000000H0H00000W
 00000000000000000
-W000000000000000W
+W0W0W0000000W0W0W
 00000000000000000
-W000000000H00000W
+0000W0O0h0O0W0000
 00000000000000000
-W0000000h0H00000W
+W0W0W0000000W0W0W
 00000000000000000
-W000000000000000W
+W00000H000H00000W
+00000000000000000
+W000h000h000h000W
 00000000000000000
 W0W0W0W0W0W0W0W0W
 </textarea>
@@ -184,22 +178,29 @@ var previous_board = []; //array for undo and failed moves to reset board. it wi
 var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
 
 var svg = {};  
-svg['H'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
-<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
-</svg>`;
-  
-svg['C'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
-<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
-</svg>`;
-
 svg['h'] = `<svg width="50" height="50" viewBox="0 0 50 50">
 <circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">He</text> 
 </svg>`;
   
-svg['empty'] = `<svg width="50" height="50" viewBox="0 0 50 50"> 
+svg['H'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
+</svg>`;
+  
+svg['O'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">O</text> 
+</svg>`;
+
+svg['N'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">N</text> 
+</svg>`;
+  
+svg['C'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
 </svg>`;
   
 Build_Puzzle(document.getElementById("input_area").value);
@@ -420,11 +421,10 @@ atom_intended_move = {};
 touched = {};
  
 if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){  
+  previous_board.push(JSON.stringify(board)); //save new board state
   //move[x_y] = 'x_y_new'
   //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y) 
   //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
-  previous_board.push(JSON.stringify(board)); //save new board state
-  //the_last_board = JSON.stringify(board);//store this move for undo before we move
   var temp = {};
   for(var key in move) { //save temp reference for all moving board objects. then remove the board references (set to empty)
     temp[key] = board[key];
@@ -436,7 +436,6 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
   //move me
   x_y_me = move[board.x_me+'_'+board.y_me];
   [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
-  //Display_Objects();
   }
 else{
     //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
@@ -481,12 +480,8 @@ for(var line of lines){
     var x_y = X_Y_To_String(x,y);    
     if(!validate_board_pos[state].includes(letter)){
        error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
-       //alert(error_msg);
        console.log(error_msg);
     }  
-
-    //board_string = board_string + Next_Div(x_y,state); 
-    //board_string = board_string + '<td>' + Next_Div(x_y,state) + '</td>'; 
     board_string = board_string + '<td id=' + x_y + ' class=' + state + '></td>'; 
     
     //create the board[x_y] objects
@@ -506,8 +501,7 @@ for(var line of lines){
       board[x_y] = new Bond_Modifier(x,y,letter);
     }
   }
-//board_string = board_string + '<br>';
-   board_string = board_string + '</tr>';
+  board_string = board_string + '</tr>';
 }
 board_string = board_string + '</table>';
 document.getElementById("board").innerHTML = board_string;
@@ -543,23 +537,16 @@ function Display_Objects(){
         continue;
       }
       if(board[x_y].is_a === 'empty'){
-        element.innerHTML = '&nbsp;';
-        //element.innerHTML = svg['empty'];
+        element.innerHTML = '';
         element.classList.remove("me");
-        element.classList.remove("atom");
+        //element.classList.remove("atom");
       }
       if(board[x_y].is_a === 'wall'){
        element.innerHTML = board[x_y].letter;
        element.classList.add("wall");
       }
       if(board[x_y].is_a === 'atom'){
-        //if(board[x_y].letter === 'H'){element.innerHTML = svg_hydrogen;}
-        //element.innerHTML = svg[board[x_y].letter];
-        //element.innerHTML = '<div>&nbsp;' + svg[board[x_y].letter] + '</div>';
         element.innerHTML = svg[board[x_y].letter];
-        //element.innerHTML = board[x_y].letter; 
-        //element.innerHTML = c'<br>  + 
-        //element.classList.add("atom");
         if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me");}
         else{
           element.classList.remove("me");
@@ -595,10 +582,6 @@ function String_To_X_Y( x_y ){//returns [x,y] int
   [x,y] = x_y.split('_');  
   return [parseInt(x) , parseInt(y)];  
 }
-   
-function Next_Div(x_y , state){
-  return '<div id=' + x_y + ' class=' + state + '></div>';  
-}  
   
 function Get_NEWS(x,y){
   var news = {};
