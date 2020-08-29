@@ -8,33 +8,19 @@
   <title>Sokobond JS - Chemical Zen</title>
   
 <style>    
-
-div{
-  border : solid; 
-  border-width: 0px;
-  }
-
+  
 #board{
   
   }
 
 table {
-  border : solid; 
-  border-width: 0px;
   border-spacing: 0px;
-}
-  
-tr { 
-  border : solid; 
-  border-width: 0px;
 }
   
 td {
   margin: 0px;
   padding: 0px;  
   border-width:0px;
-  -border : solid; 
-  -border-width: 1px;
 }  
   
 svg{
@@ -42,7 +28,7 @@ svg{
 }
   
 .me{
-  background-color: coral;   
+  text-shadow: 2px 2px 4px blue;
 }
  
 .vacuum{
@@ -51,13 +37,13 @@ svg{
 }
   
 .bond_vert{
-  text-align: center; 
+  -text-align: center; 
   width: 5px; 
   height: 50px;
   }
 
 .bond_horiz{
-  text-align: center;
+  -text-align: center;
   width: 50px;
   height: 5px;
   }
@@ -79,14 +65,17 @@ svg{
 </head>
 
 <body  ONKEYUP="Key_Input(event.keyCode);">
-arrows: move 
-&nbsp;&nbsp;&nbsp;
-r: reset
-&nbsp;&nbsp;&nbsp;
-z: undo
-<p></p>
+
 <div id=board></div>
+
+<br>
+<form action="#">
+<input type="button" value="How To Play" onclick='alert(how_to_play);'>
+</form>
+  
 <p></p>
+Build Your Own Puzzle:
+<br>  
 <textarea id="input_area" rows="4" cols="50">
 8_8
 W0W0W0W0W0W0W0W0W
@@ -110,39 +99,10 @@ W0W0W0W0W0W0W0W0W
   
 <form action="#">
 <input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
+
+<input type="button" value="How to build a puzzle" onclick='alert(building_a_puzzle);'>
+
 </form>
-  
-Building puzzles:
-<br>
--the first line is an x_y value indicating the location of the atom you will control
-<br>
--the following lines are the columns and rows of the puzzle
-<br>
--the top left is x=0 , y=0 x being columns and y being rows
-<br>
--characters can be W,0,1,2,3,4,h,H,O,N,C,+,-,.
-<br>
--W = walls -they must be in locations where x and y are both even
-<br>
--0 (zero) = empty -they can go anywhere
-<br>
-1,2,3,4 = bonds -they can go anywhere between two atoms, up to the capacity of the smallest valence. x and y must be even/odd or odd/even
-<br>
-h = helium -It has no free valence bonds and cannot join to other atoms. It must be in locations where x and y are both even
-<br>
-H = hydrogen -It has 1 free valence bonds. It must be in locations where x and y are both even  
-<br>
-O = oxygen -It has 2 free valence bonds. It must be in locations where x and y are both even  
-<br>
-N = nitrogen -It has 3 free valence bonds. It must be in locations where x and y are both even  
-<br>
-C = carbon -It has 4 free valence bonds. It must be in locations where x and y are both even  
-<br>
-+ = bond adder -bonds crossing this will increase by 1 if the atoms have free valences
-<br>
-- = bond subtractor -bonds crossing this will decrease by 1 
-<br>
-. = bond twister - bonds crossing this will wrap around it 
 
 <script>  
 //global vars ----------------------
@@ -173,47 +133,37 @@ var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to 
 var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
 var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
 
-//graphics area  
+//graphics area --------------------------  
   
 var svg = {};  
-svg['h'] = `<svg width="50" height="50" viewBox="0 0 50 50">
+  
+svg['h'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
 <circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
-<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">He</text> 
+<text font-family='arial' font-color='black' x="50%" y="50%"  text-anchor="middle" stroke="black" stroke-width="1px" dy=".3em">He</text> 
 </svg>`;
   
-svg['H'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
-<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
+svg['H'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="50%" cy="50%" r="47%" stroke="black" stroke-width="2" fill="IndianRed"></circle>
+<text x="50%" y="50%" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
 </svg>`;
   
-svg['O'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+svg['O'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="CornflowerBlue"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">O</text> 
 </svg>`;
 
-svg['N'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+svg['N'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="LightGreen"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">N</text> 
 </svg>`;
   
-svg['C'] = `<svg width="50" height="50"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+svg['C'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="Khaki"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
 </svg>`;
   
-svg['1bond_vert'] = `<svg
-   viewBox="0 0 1.3229166 13.229167"
-   height="50"
-   width="5"> 
-  <g
-     id="layer1"
-     inkscape:groupmode="layer"
-     inkscape:label="Layer 1">
-    <path
-       id="path18"
-       d="M 0,6.5990194 C 1.3696078,6.5834566 1.3696078,6.5834566 1.3696078,6.5834566"
-       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-  </g>
+svg['1bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
+ <line x1="0" y1="25" x2="5" y2="25" style="stroke:black;stroke-width:2" />
 </svg>`;  
   
 svg['1bond_horiz'] = `<svg
@@ -231,8 +181,32 @@ svg['1bond_horiz'] = `<svg
   </g>
 </svg>`;
   
-Build_Puzzle(document.getElementById("input_area").value);
- 
+//msg vars -----------------------------
+
+var how_to_play = `arrows: move 
+r: reset
+z: undo
+
+Goal: Join all atoms with free valences
+`;
+  
+var building_a_puzzle = `Building puzzles:
+-the first line is an x_y value indicating the location of the atom you will control
+-the following lines are the columns and rows of the puzzle
+-the top left is x=0 , y=0 x being columns and y being rows
+-characters can be W,0,1,2,3,4,h,H,O,N,C,+,-,.
+-W = walls -they must be in locations where x and y are both even
+-0 (zero) = empty -they can go anywhere
+1,2,3,4 = bonds -they can go anywhere between two atoms, up to the capacity of the smallest valence. x and y must be even/odd or odd/even
+h = helium -It has no free valence bonds and cannot join to other atoms. It must be in locations where x and y are both even
+H = hydrogen -It has 1 free valence bonds. It must be in locations where x and y are both even  
+O = oxygen -It has 2 free valence bonds. It must be in locations where x and y are both even  
+N = nitrogen -It has 3 free valence bonds. It must be in locations where x and y are both even  
+C = carbon -It has 4 free valence bonds. It must be in locations where x and y are both even  
++ = bond adder -bonds crossing this will increase by 1 if the atoms have free valences
+- = bond subtractor -bonds crossing this will decrease by 1 
+. = bond twister - bonds crossing this will wrap around it `;
+   
 //constructors ------------------------
   
 function Atom(x , y , letter){ // Constructor
@@ -571,7 +545,7 @@ function Display_Objects(){
         //element.classList.remove("atom");
       }
       if(board[x_y].is_a === 'wall'){
-       element.innerHTML = board[x_y].letter;
+       //element.innerHTML = board[x_y].letter;
        element.classList.add("wall");
       }
       if(board[x_y].is_a === 'atom'){
@@ -645,12 +619,30 @@ function State(x,y){
   if ( !x_odd && y_odd ){return 'bond_horiz';}
 }
   
-//What would a win look like and how do we test for it?
-
-//all atom forces must be transmitted in order from source to receiver 
+//free roaming code ----------------------------
   
+Build_Puzzle(document.getElementById("input_area").value);
+  
+//disable arrow keys from scrolling page
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
+  
+//to do ---------------------------------------
+//win state
+//bond_modifiers
+//me atom
+//mouse click and move
+//scalable board
+//loadable game boards
+//puzzle editor
 //puzzle save routine
-
+  
+  
+//all atom forces must be transmitted in order from source to receiver 
 </script>
 </body>
 </html>
