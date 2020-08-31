@@ -13,18 +13,30 @@
   
   }
 
+#board_table{
+-width: 100%;
+} 
+  
 table {
   border-spacing: 0px;
 }
-  
+    
 td {
+  position:relative;
   margin: 0px;
   padding: 0px;  
-  border-width:0px;
+  -border: solid;
+  -border-width:1px;
+  -overflow:visible;
 }  
   
 svg{
- display: block;       
+  position:absolute;
+  top: 0px;
+  left: 0px;
+ display: block;
+  overflow:visible;
+  -padding-top:100%;
 }
   
 .me{
@@ -33,17 +45,15 @@ svg{
  
 .vacuum{
   width: 50px;
-  height: 50px;
+  height: 50px;  
 }
   
-.bond_vert{
-  -text-align: center; 
+.bond_vert{ 
   width: 5px; 
   height: 50px;
   }
 
 .bond_horiz{
-  -text-align: center;
   width: 50px;
   height: 5px;
   }
@@ -53,12 +63,20 @@ svg{
   width: 5px;  
   height: 5px;   
   }
+ 
+.content{
+  -padding-top:100%;  
+} 
   
 .wall{
   background-color: CornflowerBlue;
 }
   
 .atom{
+}
+
+.dash{  
+  stroke-dasharray: 5;
 }
   
 </style>
@@ -136,29 +154,87 @@ var touched = {}; //use this to ensure we do not loop through atoms again touche
 //graphics area --------------------------  
   
 var svg = {};  
+
+svg['0_valence'] = ``;
+  
+svg['1_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 1 24 A 24 24 0 1 1 1 25" />  
+  </circle> 
+</svg>`;
+
+svg['2_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path=" M 1 24 A 24 24 0 1 1 1 25" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 26 A 24 24 180 1 1 49 25" />  
+  </circle> 
+</svg>`;
+
+svg['3_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path=" M 1 24 A 24 24 0 1 1 1 25" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 38 5 A 24 24 120 1 1 37 4" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 36 46 A 24 24 240 1 1 37 46" />  
+  </circle> 
+</svg>`;
+
+svg['4_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path=" M 1 24 A 24 24 0 1 1 1 25" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 26 1 A 24 24 90 1 1 25 1" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 26 A 24 24 180 1 1 49 25" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 24 49 A 24 24 270 1 1 25 49" />  
+  </circle> 
+</svg>`;
+  
+svg['solid_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle cx="50%" cy="50%" r="47%" stroke="black" stroke-width="2" fill="transparent"></circle></svg>`;
+  
+svg['dash_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle class="dash" cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="transparent"></circle></svg>`;
   
 svg['h'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="white"></circle>
+<circle class="dash" cx="25" cy="25" r="24"  fill="white"></circle>
 <text font-family='arial' font-color='black' x="50%" y="50%"  text-anchor="middle" stroke="black" stroke-width="1px" dy=".3em">He</text> 
 </svg>`;
   
-svg['H'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
-<circle cx="50%" cy="50%" r="47%" stroke="black" stroke-width="2" fill="IndianRed"></circle>
+svg['H'] = `<svg width="100%" height="100%" stroke="transparent" stroke-width="2" viewBox="0 0 50 50">
+<circle cx="50%" cy="50%" r="47%" fill="IndianRed"></circle>
 <text x="50%" y="50%" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
 </svg>`;
   
 svg['O'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="CornflowerBlue"></circle>
+<circle cx="25" cy="25" r="24"  fill="CornflowerBlue"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">O</text> 
 </svg>`;
 
 svg['N'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="LightGreen"></circle>
+<circle cx="25" cy="25" r="24" fill="LightGreen"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">N</text> 
 </svg>`;
   
 svg['C'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
-<circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="Khaki"></circle>
+<circle cx="25" cy="25" r="24" fill="Khaki"></circle>
 <text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
 </svg>`;
   
@@ -166,20 +242,9 @@ svg['1bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
  <line x1="0" y1="25" x2="5" y2="25" style="stroke:black;stroke-width:2" />
 </svg>`;  
   
-svg['1bond_horiz'] = `<svg
-   viewBox="0 0 13.229166 1.3229167"
-   height="5"
-   width="50">
-  <g
-     id="layer1"
-     inkscape:groupmode="layer"
-     inkscape:label="Layer 1">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:0.26571px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 6.7158266,0.01124925 v 1.32741645 0"
-       id="path91-9" />
-  </g>
-</svg>`;
+svg['1bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
+ <line x1="25" y1="0" x2="25" y2="5" style="stroke:black; stroke-width:2" />
+</svg>`;  
   
 //msg vars -----------------------------
 
@@ -470,7 +535,7 @@ var lines = input_string.split("\n"); //1st line is my position
 x_y_me = lines.shift();
 [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
 var y = -1;
-var board_string = '<table>';
+var board_string = '<table id="board_table">';
 for(var line of lines){
   y++;
   board_string = board_string + '<tr>';
@@ -540,20 +605,28 @@ function Display_Objects(){
         continue;
       }
       if(board[x_y].is_a === 'empty'){
-        element.innerHTML = '';
+        element.innerHTML = '<div class=content></div>';
         element.classList.remove("me");
         //element.classList.remove("atom");
       }
       if(board[x_y].is_a === 'wall'){
+       element.innerHTML = '<div class=content></div>';
        //element.innerHTML = board[x_y].letter;
        element.classList.add("wall");
       }
       if(board[x_y].is_a === 'atom'){
-        element.innerHTML = svg[board[x_y].letter];
-        if( (x === board.x_me) && (y === board.y_me) ){element.classList.add("me");}
-        else{
-          element.classList.remove("me");
+        let temp = svg[board[x_y].letter]; //atom text and color
+        //element.innerHTML = svg[board[x_y].letter] + svg['2_valence'];
+        if( (x === board.x_me) && (y === board.y_me) ){
+           temp = temp + svg['dash_circle']; //dasd circle
+          element.classList.add("me");
         }
+        else{
+          temp = temp + svg['solid_circle']; //normal circle
+          //element.classList.remove("me");
+        }
+        temp = temp + svg[ '' + board[x_y].Return_Free_Valence() + '_valence']; //get valance
+        element.innerHTML = temp;
       }
       if(board[x_y].is_a === 'bond'){
         let state = document.getElementById(x_y).className; //are we bond_horiz or bon_vert
@@ -634,12 +707,11 @@ window.addEventListener("keydown", function(e) {
 //to do ---------------------------------------
 //win state
 //bond_modifiers
-//me atom
 //mouse click and move
-//scalable board
+//scalable board - must use js selectall OR have a scroll mode!
 //loadable game boards
 //puzzle editor
-//puzzle save routine
+//puzzle save routine 
   
   
 //all atom forces must be transmitted in order from source to receiver 
