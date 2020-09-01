@@ -6,3 +6,6 @@ After the game works, maybe I will attempt to make a graphical puzzle editor to 
 It is written in JS. There are no JS libraries used yet. I plan to avoid them if possible. I am using SVG (Scalable Vector Graphics) for the images. So far so good.
 
 I still use tables, as they work better than pure DIV / CSS on game grids. CSS, pthuey!
+
+Please do not distribute the original Sokobond game puzzles without the original authors of Sokobond consent. Please support the game designers by purchasing their software.
+https://www.sokobond.com/
