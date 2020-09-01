@@ -1,5 +1,5 @@
 # Sokobond_JS
-My latest programming project is a recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. I have still much to do. Sound, many graphics, moving on a phone without a keyboard, responsive screen sizing, implementing the bond modifiers, winning routines, saving, etc....
+My latest programming project is a Java Script recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. I have still much to do. Sound, many graphics, moving on a phone without a keyboard, responsive screen sizing, implementing the bond modifiers, winning routines, saving, etc....
 
 After the game works, maybe I will attempt to make a graphical puzzle editor to replace the manual string editor.
 
