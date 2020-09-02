@@ -3,9 +3,9 @@
 <!--
 //to do ---------------------------------------
 //win state
-//sound
 //mouse click and move
 //scalable board - must use js selectall OR have a scroll mode!
+//sound
 //puzzle editor
 -->
 
@@ -79,9 +79,12 @@ svg{
 <p></p>
 Choose your puzzle:
 <br>
-<a href=# onclick="Load_Puzzle('aye');">Aye</a> , 
+<a href=# onclick="Load_Puzzle('aye');">Aye</a> 
+, 
 <a href=# onclick="Load_Puzzle('suit');">Suit</a>
-  
+, 
+<a href=# onclick="Load_Puzzle('pendant');">Pendant</a>
+
 <p></p>
 Build Your Own Puzzle:
 <br>  
@@ -814,8 +817,7 @@ window.addEventListener("keydown", function(e) {
 }, false);
   
 var puzzles = {};
-puzzles['aye'] = `
-8_8
+puzzles['aye'] = `8_8
 W0W0W0W0W0W0W0W0W
 00000000000000000
 W000h000h000h000W
@@ -835,8 +837,7 @@ W000h000h000h000W
 W0W0W0W0W0W0W0W0W
 `;
 
-puzzles['suit'] = `
-4_2
+puzzles['suit'] = `4_2
 W0W0W0W0W0W0W
 0000000000000
 W000H000O000W
@@ -852,6 +853,26 @@ W000H000O000W
 W0W0000000W0W
 0000000000000
 00W0W0W0W0W00`;
+
+puzzles['pendant'] = `6_8
+0000W0W0W0000
+0000000000000
+W0W0W000W0W0W
+00000.0.00000
+W00000000000W
+000.0-0-0.000
+W0H0W000W0H0W
+0000000000000
+W000W0C0W000W
+0000000000000
+W0H0W000W0H0W
+000.0-0-0.000
+W00000000000W
+00000.0.00000
+W0W0W000W0W0W
+0000000000000
+0000W0W0W0000
+`;
 
 function Load_Puzzle(puzzle){
   document.getElementById("input_area").value = puzzles[puzzle];
@@ -1627,8 +1648,7 @@ window.addEventListener("keydown", function(e) {
 }, false);
   
 var puzzles = {};
-puzzles['aye'] = `
-8_8
+puzzles['aye'] = `8_8
 W0W0W0W0W0W0W0W0W
 00000000000000000
 W000h000h000h000W
@@ -1648,8 +1668,7 @@ W000h000h000h000W
 W0W0W0W0W0W0W0W0W
 `;
 
-puzzles['suit'] = `
-4_2
+puzzles['suit'] = `4_2
 W0W0W0W0W0W0W
 0000000000000
 W000H000O000W
@@ -1665,6 +1684,26 @@ W000H000O000W
 W0W0000000W0W
 0000000000000
 00W0W0W0W0W00`;
+
+puzzles['pendant'] = `6_8
+0000W0W0W0000
+0000000000000
+W0W0W000W0W0W
+00000.0.00000
+W00000000000W
+000.0-0-0.000
+W0H0W000W0H0W
+0000000000000
+W000W0C0W000W
+0000000000000
+W0H0W000W0H0W
+000.0-0-0.000
+W00000000000W
+00000.0.00000
+W0W0W000W0W0W
+0000000000000
+0000W0W0W0000
+`;
 
 function Load_Puzzle(puzzle){
   document.getElementById("input_area").value = puzzles[puzzle];
