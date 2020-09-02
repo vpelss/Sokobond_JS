@@ -9,14 +9,6 @@
   
 <style>    
   
-#board{
-  
-  }
-
-#board_table{
--width: 100%;
-} 
-  
 table {
   border-spacing: 0px;
 }
@@ -34,13 +26,8 @@ svg{
   position:absolute;
   top: 0px;
   left: 0px;
- display: block;
+  display: block;
   overflow:visible;
-  -padding-top:100%;
-}
-  
-.me{
-  -text-shadow: 2px 2px 4px blue;
 }
  
 .vacuum{
@@ -64,19 +51,8 @@ svg{
   height: 5px;   
   }
  
-.content{
-  -padding-top:100%;  
-} 
-  
 .wall{
   background-color: CornflowerBlue;
-}
-  
-.atom{
-}
-
-.dash{  
-  stroke-dasharray: 5;
 }
   
 </style>
@@ -90,6 +66,11 @@ svg{
 <form action="#">
 <input type="button" value="How To Play" onclick='alert(how_to_play);'>
 </form>
+  
+<p></p>
+Choose your puzzle:
+<br>
+<a href=# onclick="Load_Puzzle('1');">Puzzle 1</a>
   
 <p></p>
 Build Your Own Puzzle:
@@ -134,7 +115,7 @@ var atom_chars = ['H','h','O','C','N'];
 var wall_chars = ['W'];
 var modifier_chars = ['+','-','.'];
 var bond_chars = ['1','2','3','4'];
-var validate_board_pos = {};  //note keys match state/class so we can do build board error checking
+var validate_board_pos = {};  //note keys (hyperspace,vacuum,bond_vert,bond_horiz) match state/class so we can easily do board error checking during the board build
 validate_board_pos['hyperspace'] = empty_chars.concat(modifier_chars);
 validate_board_pos['vacuum'] = empty_chars.concat(atom_chars,wall_chars);
 validate_board_pos['bond_vert'] = empty_chars.concat(bond_chars);
@@ -147,12 +128,12 @@ var direction = {
 };
  
 var x_y_me='';
-var board = {}; //x,y,can_be=[empty,wall,atom,bond,bond_modifier], is_a , obj (atom,bond,wall..) , class
+var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.  
-var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move is succesful
-var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; for check to see if 2 atoms trying to occupy same space
-var previous_board = []; //array for undo and failed moves to reset board. it will contain previous_board.push(JSON.stringify(board))
-var touched = {}; //use this to ensure we do not loop through atoms again touched[x_y]=1;
+var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
+var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
+var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
+var touched = {}; //this allows us to easily determine if we have already processed an atom or bond. touched[x_y]=1;
 
 //graphics area --------------------------  
   
@@ -227,7 +208,7 @@ svg['4_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
   
 svg['solid_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle cx="50%" cy="50%" r="47%" stroke="black" stroke-width="2" fill="transparent"></circle></svg>`;
   
-svg['dash_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle class="dash" cx="25" cy="25" r="24" stroke="black" stroke-width="2" fill="transparent"></circle></svg>`;
+svg['dash_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" stroke-dasharray="5,5" fill="transparent"></circle></svg>`;
   
 svg['h'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
 <circle class="dash" cx="25" cy="25" r="24"  fill="white"></circle>
@@ -433,6 +414,7 @@ function Bond(x,y,value){
   //this.letter = letter; //ths is only used on bond creation. then we use value.
   this.value = value; 
   
+  //all atom forces MUST be transmitted in order from source to receiver 
   this.Can_I_Move = function(NEWS , NEWS_incomming_direction , transmitting_atom , receiving_atom){ //also transfers force
     let dx = direction[NEWS].x;
     let dy = direction[NEWS].y;
@@ -595,9 +577,6 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
 else{
     //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
     Set_Board(premove_board);
-    //Join_Free_Atoms();
-    //Display_Objects();
-    //return; //skip next steps!
   }
 Display_Objects();
 }
@@ -695,34 +674,28 @@ function Display_Objects(){
       if(board[x_y].is_a === 'empty'){
         element.innerHTML = '<div class=content></div>';
         element.classList.remove("me");
-        //element.classList.remove("atom");
       }
       if(board[x_y].is_a === 'wall'){
        element.innerHTML = '<div class=content></div>';
-       //element.innerHTML = board[x_y].letter;
        element.classList.add("wall");
       }
       if(board[x_y].is_a === 'atom'){
         let temp = svg[letter]; //atom text and color
-        //element.innerHTML = svg[board[x_y].letter] + svg['2_valence'];
         if( (x === board.x_me) && (y === board.y_me) ){
            temp = temp + svg['dash_circle']; //dasd circle
           element.classList.add("me");
         }
         else{
           temp = temp + svg['solid_circle']; //normal circle
-          //element.classList.remove("me");
         }
         temp = temp + svg[ '' + board[x_y].Return_Free_Valence() + '_valence']; //get valance
         element.innerHTML = temp;
       }
       if(board[x_y].is_a === 'bond'){
         let state = document.getElementById(x_y).className; //are we bond_horiz or bon_vert
-         //element.innerHTML = board[x_y].letter;
         element.innerHTML = '' + svg[board[x_y].value + state];
       }
       if(board[x_y].is_a === 'bond_modifier'){
-        //element.innerHTML = board[x_y].letter;
         element.innerHTML = svg[letter];
       }
           
@@ -795,15 +768,39 @@ window.addEventListener("keydown", function(e) {
   
 //to do ---------------------------------------
 //win state
-//bond_modifiers
 //mouse click and move
 //scalable board - must use js selectall OR have a scroll mode!
-//loadable game boards
 //puzzle editor
 //puzzle save routine 
-  
-  
-//all atom forces must be transmitted in order from source to receiver 
+
+var puzzles = {};
+ puzzles['1'] = `8_8
+W0W0W0W0W0W0W0W0W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+0000W0O0h0O0W0000
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W0W0W0W0W0W0W0W0W
+`;
+
+function Load_Puzzle(puzzle){
+  document.getElementById("input_area").value = puzzles[puzzle];
+  Build_Puzzle(document.getElementById("input_area").value);
+  Join_Free_Atoms();
+  Display_Objects();
+}
+   
 </script>
 </body>
 </html>
