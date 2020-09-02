@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 
+<!--
+//to do ---------------------------------------
+//win state
+//sound
+//mouse click and move
+//scalable board - must use js selectall OR have a scroll mode!
+//puzzle editor
+-->
+
 <html>
 <head>
-<meta name="description" content="Sokobond JS Chemical Zen">
+<meta name="description" content="Sokobond JS - Chemical Zen">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Sokobond JS - Chemical Zen</title>
-  
-<style>    
-  
+<style id="jsbin-css">
 table {
   border-spacing: 0px;
 }
@@ -21,15 +28,7 @@ td {
   -border-width:1px;
   -overflow:visible;
 }  
-  
-svg{
-  position:absolute;
-  top: 0px;
-  left: 0px;
-  display: block;
-  overflow:visible;
-}
- 
+   
 .vacuum{
   width: 50px;
   height: 50px;  
@@ -54,7 +53,17 @@ svg{
 .wall{
   background-color: CornflowerBlue;
 }
-  
+
+svg{
+  position:absolute;
+  top: 0px;
+  left: 0px;
+  display: block;
+  overflow:visible;
+}
+
+
+
 </style>
 </head>
 
@@ -70,7 +79,8 @@ svg{
 <p></p>
 Choose your puzzle:
 <br>
-<a href=# onclick="Load_Puzzle('1');">Puzzle 1</a>
+<a href=# onclick="Load_Puzzle('aye');">Aye</a> , 
+<a href=# onclick="Load_Puzzle('suit');">Suit</a>
   
 <p></p>
 Build Your Own Puzzle:
@@ -106,7 +116,8 @@ W0W0W0W0W0W0W0W0W
 <p></p>  
 Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
 
-<script>  
+
+<script id="jsbin-javascript">
 //global vars ----------------------
 var error_msg = '';
 var input_string;
@@ -144,8 +155,8 @@ svg['-'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
 </svg>`;
 
 svg['+'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
- <line x1="0" y1="2.5" x2="5" y2="2.5" style="stroke:black;stroke-width:2" />
- <line x1="2.5" y1="0" x2="2.5" y2="5" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="2.5" x2="5" y2="2.5" style="stroke:black;stroke-width:1" />
+ <line x1="2.5" y1="0" x2="2.5" y2="5" style="stroke:black;stroke-width:1" />
 </svg>`;  
   
 svg['.'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
@@ -281,7 +292,10 @@ svg['4bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
   
 //msg vars -----------------------------
 
-var how_to_play = `arrows: move 
+var how_to_play = `
+Zen needs no instruction...
+
+arrows: move 
 r: reset
 z: undo
 
@@ -579,6 +593,7 @@ else{
     Set_Board(premove_board);
   }
 Display_Objects();
+Save_State();
 }
 
 }	
@@ -753,10 +768,42 @@ function State(x,y){
   if ( x_odd && !y_odd ){return 'bond_vert';}
   if ( !x_odd && y_odd ){return 'bond_horiz';}
 }
+ 
+function Restore_State()
+{  
+if( supports_html5_storage() == false ) {return false;} 
+if( typeof localStorage['board'] === 'undefined' ) {return false;} //nothing to restore. use var
+//order or restoration is very important here
+document.getElementById("input_area").value = localStorage['input_area'];
+Build_Puzzle(document.getElementById("input_area").value );
+//board = JSON.parse( localStorage['board'] );
+Set_Board(localStorage['board']);
+Join_Free_Atoms();
+Display_Objects();
+previous_board = JSON.parse( localStorage['previous_board'] );
+return true;
+} 
   
+function Save_State(){
+if( supports_html5_storage() == false ) {return} 
+localStorage['board'] = JSON.stringify( board );
+localStorage['previous_board'] = JSON.stringify( previous_board );    
+localStorage['input_area'] = document.getElementById("input_area").value;
+}
+
+function supports_html5_storage() {
+  try {
+    return 'localStorage' in window && window['localStorage'] !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
 //free roaming code ----------------------------
-  
-Build_Puzzle(document.getElementById("input_area").value);
+
+if(Restore_State() == false){
+  Build_Puzzle(document.getElementById("input_area").value);
+}
   
 //disable arrow keys from scrolling page
 window.addEventListener("keydown", function(e) {
@@ -766,15 +813,9 @@ window.addEventListener("keydown", function(e) {
     }
 }, false);
   
-//to do ---------------------------------------
-//win state
-//mouse click and move
-//scalable board - must use js selectall OR have a scroll mode!
-//puzzle editor
-//puzzle save routine 
-
 var puzzles = {};
- puzzles['1'] = `8_8
+puzzles['aye'] = `
+8_8
 W0W0W0W0W0W0W0W0W
 00000000000000000
 W000h000h000h000W
@@ -794,13 +835,861 @@ W000h000h000h000W
 W0W0W0W0W0W0W0W0W
 `;
 
+puzzles['suit'] = `
+4_2
+W0W0W0W0W0W0W
+0000000000000
+W000H000O000W
+0000000000000
+W00000W00000W
+0000000000000
+W00000000000W
+0000000000000
+W00000W00000W
+0000000000000
+W000H000O000W
+0000000000000
+W0W0000000W0W
+0000000000000
+00W0W0W0W0W00`;
+
 function Load_Puzzle(puzzle){
   document.getElementById("input_area").value = puzzles[puzzle];
   Build_Puzzle(document.getElementById("input_area").value);
   Join_Free_Atoms();
   Display_Objects();
 }
-   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
-</body>
+
+
+<script id="jsbin-source-css" type="text/css">table {
+  border-spacing: 0px;
+}
+    
+td {
+  position:relative;
+  margin: 0px;
+  padding: 0px;  
+  -border: solid;
+  -border-width:1px;
+  -overflow:visible;
+}  
+   
+.vacuum{
+  width: 50px;
+  height: 50px;  
+}
+  
+.bond_vert{ 
+  width: 5px; 
+  height: 50px;
+  }
+
+.bond_horiz{
+  width: 50px;
+  height: 5px;
+  }
+  
+.hyperspace{
+  text-align: center;  
+  width: 5px;  
+  height: 5px;   
+  }
+ 
+.wall{
+  background-color: CornflowerBlue;
+}
+
+svg{
+  position:absolute;
+  top: 0px;
+  left: 0px;
+  display: block;
+  overflow:visible;
+}
+
+
+</script>
+
+<script id="jsbin-source-javascript" type="text/javascript">//global vars ----------------------
+var error_msg = '';
+var input_string;
+var empty_chars = ['0']; 
+var atom_chars = ['H','h','O','C','N'];
+var wall_chars = ['W'];
+var modifier_chars = ['+','-','.'];
+var bond_chars = ['1','2','3','4'];
+var validate_board_pos = {};  //note keys (hyperspace,vacuum,bond_vert,bond_horiz) match state/class so we can easily do board error checking during the board build
+validate_board_pos['hyperspace'] = empty_chars.concat(modifier_chars);
+validate_board_pos['vacuum'] = empty_chars.concat(atom_chars,wall_chars);
+validate_board_pos['bond_vert'] = empty_chars.concat(bond_chars);
+validate_board_pos['bond_horiz'] = empty_chars.concat(bond_chars);    
+var direction = {
+ 'N' : { 'x':0 , 'y':-1  },
+ 'S' : { 'x':0 , 'y':1  },
+ 'E' : { 'x':1 , 'y':0  },
+ 'W' : { 'x':-1 , 'y':0  }  
+};
+ 
+var x_y_me='';
+var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
+//allows us to save JSON.stringify(board) then easily rebuild each object on board.  
+var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
+var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
+var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
+var touched = {}; //this allows us to easily determine if we have already processed an atom or bond. touched[x_y]=1;
+
+//graphics area --------------------------  
+  
+var svg = {};  
+
+svg['-'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
+ <line x1="0" y1="2.5" x2="5" y2="2.5" style="stroke:black;stroke-width:2" />
+</svg>`;
+
+svg['+'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
+ <line x1="0" y1="2.5" x2="5" y2="2.5" style="stroke:black;stroke-width:1" />
+ <line x1="2.5" y1="0" x2="2.5" y2="5" style="stroke:black;stroke-width:1" />
+</svg>`;  
+  
+svg['.'] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
+<circle cx="2.5" cy="2.5" r="1.5" stroke="black" stroke-width="1" fill="black">
+</svg>`;
+  
+svg['0_valence'] = ``;
+  
+svg['1_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 25 A 24 24 0 1 1 48 17 z" />  
+  </circle> 
+</svg>`;
+
+svg['2_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 25 A 24 24 0 1 1 48 17 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 1 25 A 24 24 0 1 1 2 33 z" />  
+  </circle> 
+</svg>`;
+
+svg['3_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 25 A 24 24 0 1 1 48 17 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 13 46 A 24 24 0 1 1 21 49 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 13 4 A 24 24 0 1 1 7 10 z" />  
+  </circle> 
+</svg>`;
+
+svg['4_valence'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path=" M 1 24 A 24 24 0 1 1 1 25 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 26 1 A 24 24 90 1 1 25 1 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 49 26 A 24 24 180 1 1 49 25 z" />  
+  </circle> 
+<circle cx="0" cy="0" r="5" stroke="black" stroke-width="2" fill="white">
+<animateMotion dur="10s" repeatCount="indefinite"
+      path="M 24 49 A 24 24 270 1 1 25 49 z" />  
+  </circle> 
+</svg>`;
+  
+svg['solid_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle cx="50%" cy="50%" r="47%" stroke="black" stroke-width="2" fill="transparent"></circle></svg>`;
+  
+svg['dash_circle'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50"><circle cx="25" cy="25" r="24" stroke="black" stroke-width="2" stroke-dasharray="5,5" fill="transparent"></circle></svg>`;
+  
+svg['h'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle class="dash" cx="25" cy="25" r="24"  fill="white"></circle>
+<text font-family='arial' font-color='black' x="50%" y="50%"  text-anchor="middle" stroke="black" stroke-width="1px" dy=".3em">He</text> 
+</svg>`;
+  
+svg['H'] = `<svg width="100%" height="100%" stroke="transparent" stroke-width="2" viewBox="0 0 50 50">
+<circle cx="50%" cy="50%" r="47%" fill="IndianRed"></circle>
+<text x="50%" y="50%" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">H</text>    
+</svg>`;
+  
+svg['O'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24"  fill="CornflowerBlue"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">O</text> 
+</svg>`;
+
+svg['N'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" fill="LightGreen"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">N</text> 
+</svg>`;
+  
+svg['C'] = `<svg width="100%" height="100%"  viewBox="0 0 50 50">
+<circle cx="25" cy="25" r="24" fill="Khaki"></circle>
+<text x="25" y="25" text-anchor="middle" stroke="#51c5cf" stroke-width="2px" dy=".3em">C</text> 
+</svg>`;
+  
+svg['1bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
+ <line x1="0" y1="25" x2="5" y2="25" style="stroke:black;stroke-width:2" />
+</svg>`;  
+  
+svg['2bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
+ <line x1="0" y1="17" x2="5" y2="17" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="35" x2="5" y2="35" style="stroke:black;stroke-width:2" />
+svg>`;  
+  
+svg['3bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
+ <line x1="0" y1="12.5" x2="5" y2="12.5" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="25" x2="5" y2="25" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="37.5" x2="5" y2="37.5" style="stroke:black;stroke-width:2" />
+svg>`;  
+
+svg['4bond_vert'] = `<svg width="100%" height="100%"  viewBox="0 0 5 50">
+ <line x1="0" y1="10" x2="5" y2="10" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="20" x2="5" y2="20" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="30" x2="5" y2="30" style="stroke:black;stroke-width:2" />
+ <line x1="0" y1="40" x2="5" y2="40" style="stroke:black;stroke-width:2" />
+svg>`;  
+  
+svg['1bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
+ <line x1="25" y1="0" x2="25" y2="5" style="stroke:black; stroke-width:2" />
+</svg>`;  
+
+svg['2bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
+ <line x1="17" y1="0" x2="17" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="35" y1="0" x2="35" y2="5" style="stroke:black; stroke-width:2" />
+</svg>`;  
+  
+svg['3bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
+ <line x1="12.5" y1="0" x2="12.5" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="25" y1="0" x2="25" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="37.5" y1="0" x2="37.5" y2="5" style="stroke:black; stroke-width:2" />
+</svg>`;  
+  
+svg['4bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
+ <line x1="10" y1="0" x2="10" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="20" y1="0" x2="20" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="30" y1="0" x2="30" y2="5" style="stroke:black; stroke-width:2" />
+ <line x1="40" y1="0" x2="40" y2="5" style="stroke:black; stroke-width:2" /> 
+</svg>`;  
+  
+//msg vars -----------------------------
+
+var how_to_play = `
+Zen needs no instruction...
+
+arrows: move 
+r: reset
+z: undo
+
+Goal: Join all atoms with free valences
+`;
+  
+var building_a_puzzle = `Building puzzles:
+-the first line is an x_y value indicating the location of the atom you will control
+-the following lines are the columns and rows of the puzzle
+-the top left is x=0 , y=0 x being columns and y being rows
+-characters can be W,0,1,2,3,4,h,H,O,N,C,+,-,.
+-W = walls -they must be in locations where x and y are both even
+-0 (zero) = empty -they can go anywhere
+1,2,3,4 = bonds -they can go anywhere between two atoms, up to the capacity of the smallest valence. x and y must be even/odd or odd/even
+h = helium -It has no free valence bonds and cannot join to other atoms. It must be in locations where x and y are both even
+H = hydrogen -It has 1 free valence bonds. It must be in locations where x and y are both even  
+O = oxygen -It has 2 free valence bonds. It must be in locations where x and y are both even  
+N = nitrogen -It has 3 free valence bonds. It must be in locations where x and y are both even  
+C = carbon -It has 4 free valence bonds. It must be in locations where x and y are both even  
++ = bond adder -bonds crossing this will increase by 1 if the atoms have free valences
+- = bond subtractor -bonds crossing this will decrease by 1 
+. = bond twister - bonds crossing this will wrap around it `;
+   
+//constructors ------------------------
+  
+function Atom(x , y , letter){ // Constructor
+  this.is_a = 'atom';
+  this.x = x;
+  this.y = y;
+  this.letter = letter; //H, h, O, N, C
+  this.valence = {'h': 0 , 'H':1 , 'O':2 , 'N':3 , 'C':4}[letter]; //set on create based on letter
+  //this.free_valence = this.valence;
+  
+  this.Can_I_Move = function(NEWS){ //also transfers force
+    let dx = direction[NEWS].x;
+    let dy = direction[NEWS].y;
+    let x_y = this.x.toString() + '_' + this.y.toString(); 
+    let all_news = Get_NEWS(this.x,this.y);
+    let x_y_half_step = all_news[NEWS].x_y_half_step;
+    let x_y_full_step =  all_news[NEWS].x_y_full_step;
+    
+    if(touched[x_y] === 1) {return true;} //already been here
+    touched[x_y]=1; //set this touched{x_y}=1 so we don't recurse into this atom again and create infite loops
+    //1. check for a wall hit
+    if(board[x_y_full_step].is_a === 'wall') {return false;} 
+    
+    //2. check to see if something else is moving to the same location
+    if(atom_intended_move[x_y_full_step]) {return false;} //and atom is already moving here. fail  
+    //3. state atom's intention of moving here 
+    atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
+    
+    //4. see if non bonded atom,not touched, is in our way, and see if it can move
+    if(board[x_y_half_step].is_a !== 'bond'){//no bond in our way
+      if(board[x_y_full_step].is_a === 'atom'){//atom in our way
+        if(touched[x_y_full_step] !== 1){//hasn't been touched
+          if(!board[x_y_full_step].Can_I_Move(NEWS)){return false;}
+        }       
+      }    
+    }
+    
+    //see if bonds (not touched) can move 
+    all_news =  Get_NEWS(this.x,this.y) 
+    for(let key in all_news){
+      let x_y_half_step = all_news[key].x_y_half_step;
+      let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
+      if(board[x_y_half_step].is_a === 'bond'){
+        if(!board[x_y_half_step].Can_I_Move(NEWS , key , x_y , receiving_atom)){return false;} //bond routine needs NEWS,transmitting_atom,recieving_atom
+        //
+      }
+    }
+        
+    //if here, all downstream tests are good to move. but this does not mean that the move will not fail. 
+    this.x = this.x + dx + dx;
+    this.y = this.y + dy + dy;
+    move[x_y] = x_y_full_step; //used to move atoms if we are good to go
+    //or move[x_y] = '' + this.x + '_' + this.y;
+    return true; 
+    }; 
+
+  this.Join_To_Free_Atoms = function(){
+    //Return_Free_Valence of this atom
+    let free_valence = this.Return_Free_Valence();
+    //for adjacent atoms in direction with no bond && adjacent atoms with free valence , create a bond until my free_valence === 0
+    //for(var key in direction){
+    let all_news =  Get_NEWS(this.x,this.y) 
+    for(var key in all_news){
+      if(free_valence <= 0){return;}
+      let x_half_step = all_news[key].x_half_step;
+      let y_half_step = all_news[key].y_half_step;
+      let x_y_half_step = all_news[key].x_y_half_step;
+      let x_y_full_step = all_news[key].x_y_full_step;
+      if(board[x_y_full_step].is_a === 'atom'){
+        if(board[x_y_full_step].Return_Free_Valence() > 0){
+          if(board[x_y_half_step].is_a === 'empty'){
+          board[x_y_half_step] = new Bond(x_half_step,y_half_step,1); //add a bond
+          free_valence--;
+          }
+        }
+      }
+    }    
+  };
+  
+  this.Return_Free_Valence  = function(){
+    //look in all directions and calculate  
+    let sum = 0;
+    let free_valence;
+    let x_test;
+    let y_test;
+    let all_news =  Get_NEWS(this.x,this.y) 
+    for(let key in all_news){
+      let x_y = all_news[key].x_y_half_step;
+      if(board[x_y].is_a === 'bond'){
+        sum = sum + board[x_y].value;  
+      }
+    }
+    free_valence = this.valence - sum; 
+    if(free_valence < 0){
+      console.log('Impossible free_valence at ' + x + '_' + y);
+    }
+    return free_valence;
+  };
+  
+  return this; //return constructor
+}
+   
+function Bond(x,y,value){
+  this.is_a = 'bond';
+  this.x = x;
+  this.y = y;
+  //this.letter = letter; //ths is only used on bond creation. then we use value.
+  this.value = value; 
+  
+  //all atom forces MUST be transmitted in order from source to receiver 
+  this.Can_I_Move = function(NEWS , NEWS_incomming_direction , transmitting_atom , receiving_atom){ //also transfers force
+    let dx = direction[NEWS].x;
+    let dy = direction[NEWS].y;
+    let x_y = this.x.toString() + '_' + this.y.toString(); 
+    let all_news = Get_NEWS(this.x,this.y);
+    let x_y_half_step = all_news[NEWS].x_y_half_step;
+    let x_y_full_step =  all_news[NEWS].x_y_full_step;
+    
+    if(touched[x_y] === 1) {return true;} //already been here
+    touched[x_y]=1; 
+    
+    //do half the move calculation here. IF . then we need to move initial direction + new direction. The new direction will be reflected in a changed dx and dy, and the initial direction if dx and dy are unchanged
+    let half_move_x = this.x + dx;
+    let half_move_y = this.y + dy;
+    
+    //1.is there a bond_modifyer in the path - y ?
+    if(board[x_y_half_step].is_a === 'bond_modifier'){
+      if(board[x_y_half_step].letter === '-'){
+        //reduce bond by 1. if 0, do not transmit force and return true
+        board[x_y].value--;
+        if(board[x_y].value <=0){
+          board[x_y] = new Empty(this.x,this.y,'0'); //remove bond
+          return true;
+        }        
+      }
+      
+      if(board[x_y_half_step].letter === '+'){
+        //if both joined atoms have free valences, join them
+        if((board[transmitting_atom].Return_Free_Valence() > 0) && (board[receiving_atom].Return_Free_Valence() > 0)){
+          board[x_y].value++;
+        }//if not ignore and continue
+      }
+      
+      if(board[x_y_half_step].letter === '.'){
+        //new force to transfer to next atom is in direction of source atom
+        //bond will move to original direction + new direction
+        let anti = {'N':'S' , 'S':'N' , 'E':'W' , 'W':'E'};
+        NEWS = anti[NEWS_incomming_direction];
+        dx = direction[NEWS].x;
+        dy = direction[NEWS].y;
+      }
+    }
+        
+    //transmit move / force to receiving atom
+    if(!board[receiving_atom].Can_I_Move(NEWS)){return false;}
+    
+    //move bond. second half of calculation, see above.
+    this.x = half_move_x + dx;
+    this.y = half_move_y + dy;
+    //var x_y_full_step = 
+    move[x_y] = '' + this.x + '_' + this.y; //used to move bond if we are good to go
+    return true;     
+  }
+   
+  return this;
+}
+  
+function Empty(x,y,letter){
+  this.is_a = 'empty';
+  this.letter = letter;
+  this.x = x;
+  this.y = y; 
+  return this;
+}
+  
+function Wall(x,y,letter){
+  this.is_a = 'wall';
+  this.x = x;
+  this.y = y;
+  this.letter = letter;  
+  return this;
+}
+  
+function Bond_Modifier(x,y,letter){
+  this.is_a = 'bond_modifier';
+  this.x = x;
+  this.y = y;
+  this.letter = letter;  
+  return this;
+  //- reduce bond by one
+  //+ increase bond by one if joining atoms hav free valences
+  // . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to 
+}
+  
+//main routine--------------------------
+  
+function Key_Input(keyCode)
+{ 
+if(document.activeElement === document.getElementById('input_area')){
+  return;
+}
+    
+//esc : 27
+  
+if (keyCode == 82){ //r 82
+  while(previous_board.length > 0){
+    Set_Board( previous_board.pop() );
+    Display_Objects(); 
+  }
+  return;
+}
+  
+if (keyCode == 90){ //z:undo
+  if( previous_board.length > 0){
+    Set_Board( previous_board.pop() );
+    Display_Objects(); 
+    return; //do not hit move routine
+    }
+}
+ 
+let move_key_pressed = false;
+let NEWS;
+if (keyCode == 37){ //left 
+  NEWS = 'W';
+  move_key_pressed = true;
+}
+  
+if (keyCode == 38){ //up
+  NEWS = 'N';
+  move_key_pressed = true;
+}
+  
+if (keyCode == 39){ //right
+  NEWS = 'E';
+  move_key_pressed = true;
+}
+  
+if (keyCode == 40){ //down
+  NEWS = 'S';
+  move_key_pressed = true;
+}
+  
+if(move_key_pressed){  
+//clear and get ready for another move
+move = {};
+atom_intended_move = {};
+touched = {};
+ 
+let premove_board = JSON.stringify(board); //so we can perfectly reset board on failed move
+  
+if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){  
+  //save old board state
+  previous_board.push(JSON.stringify(board)); //for z - undo
+  //all moves are in move[x_y] = 'x_y_new'
+  //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y) 
+  //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
+  let temp = {};
+  for(var key in move) { //save temp reference for all moving board objects. then remove the board references (set to empty)
+    temp[key] = board[key];
+    board[key] = new Empty(String_To_X_Y(key));
+  }
+  for(var key in move){ //now set all moved board references
+    board[move[key]] = temp[key];
+  }
+  //move me
+  x_y_me = move[board.x_me+'_'+board.y_me];
+  [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+  Join_Free_Atoms(); //for every atom, check for atoms that can bond
+  }
+else{
+    //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
+    Set_Board(premove_board);
+  }
+Display_Objects();
+Save_State();
+}
+
+}	
+
+//board functions -----------------
+  
+function Build_Puzzle(input_string){ //build display board and board objects
+board = {};
+board.x_me=0;
+board.y_me=0; 
+board.width = 0;
+board.height = 0; 
+move = {};
+atom_intended_move = {};
+previous_board = [];
+touched = {};
+                    
+input_string = input_string.trim();
+let lines = input_string.split("\n"); //1st line is my position
+x_y_me = lines.shift();
+[board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+let y = -1;
+let board_string = '<table id="board_table">';
+for(let line of lines){
+  y++;
+  board_string = board_string + '<tr>';
+  if(y > board.height) { board.height = y; }
+  var x = -1;  
+  for(let letter of line){
+    x++;    
+    if(x > board.width) { board.width = x; }
+    var state = State(x,y);
+    var x_y = X_Y_To_String(x,y);    
+    if(!validate_board_pos[state].includes(letter)){
+       error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
+       console.log(error_msg);
+    }  
+    board_string = board_string + '<td id=' + x_y + ' class=' + state + '></td>'; 
+    
+    //create the board[x_y] objects
+    if(empty_chars.includes(letter)) { //0 indicates empty only 
+      board[x_y] = new Empty(x,y);
+    } 
+    if( bond_chars.includes(letter) ) {
+      board[x_y] = new Bond(x,y,parseInt(letter));
+    }
+    if( wall_chars.includes(letter) ) {
+      board[x_y] = new Wall(x,y,letter);
+    }
+    if( atom_chars.includes(letter) ) {
+      board[x_y] = new Atom(x,y,letter);
+    } 
+    if( modifier_chars.includes(letter) ) { // + - .
+      board[x_y] = new Bond_Modifier(x,y,letter);
+    }
+  }
+  board_string = board_string + '</tr>';
+}
+board_string = board_string + '</table>';
+document.getElementById("board").innerHTML = board_string;
+if(error_msg !== ''){
+ alert(error_msg); 
+}
+Join_Free_Atoms();
+Display_Objects();
+}
+ 
+function Set_Board(json_string){
+  let new_board = JSON.parse(json_string);
+  board.x_me = new_board.x_me;
+  board.y_me = new_board.y_me;
+  board.width = new_board.width;
+  board.height = new_board.height;
+  for(let key in new_board){
+    let x , y;
+    [x,y] = String_To_X_Y(key);
+    if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
+    if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
+    if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
+    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
+  }
+}
+  
+function Display_Objects(){
+  for(let y = 0 ; y <= board.height ; y++){
+    for(let x = 0 ; x <= board.width ; x++){
+      let x_y = X_Y_To_String(x,y);
+      let element = document.getElementById(x_y);
+      let letter = board[x_y].letter;
+      if(typeof board[x_y] === 'undefined'){
+        continue;
+      }
+      if(board[x_y].is_a === 'empty'){
+        element.innerHTML = '<div class=content></div>';
+        element.classList.remove("me");
+      }
+      if(board[x_y].is_a === 'wall'){
+       element.innerHTML = '<div class=content></div>';
+       element.classList.add("wall");
+      }
+      if(board[x_y].is_a === 'atom'){
+        let temp = svg[letter]; //atom text and color
+        if( (x === board.x_me) && (y === board.y_me) ){
+           temp = temp + svg['dash_circle']; //dasd circle
+          element.classList.add("me");
+        }
+        else{
+          temp = temp + svg['solid_circle']; //normal circle
+        }
+        temp = temp + svg[ '' + board[x_y].Return_Free_Valence() + '_valence']; //get valance
+        element.innerHTML = temp;
+      }
+      if(board[x_y].is_a === 'bond'){
+        let state = document.getElementById(x_y).className; //are we bond_horiz or bon_vert
+        element.innerHTML = '' + svg[board[x_y].value + state];
+      }
+      if(board[x_y].is_a === 'bond_modifier'){
+        element.innerHTML = svg[letter];
+      }
+          
+    }
+  }
+}
+
+//general functions -------------------------
+
+function Join_Free_Atoms(){
+  for(let key in board){
+    if(board[key].is_a === 'atom'){
+      board[key].Join_To_Free_Atoms();
+    }
+  }  
+}
+  
+function X_Y_To_String(x,y){
+  return x.toString()+'_'+y.toString();  
+}
+  
+function String_To_X_Y( x_y ){//returns [x,y] int
+  var x,y;
+  [x,y] = x_y.split('_');  
+  return [parseInt(x) , parseInt(y)];  
+}
+  
+function Get_NEWS(x,y){
+  let news = {};
+  for(let key in direction){
+      let dx = direction[key].x;
+      let dy = direction[key].y;
+      let x_half_step = x + dx;
+      let y_half_step = y + dy;
+      let x_full_step = x + dx + dx;
+      let y_full_step = y + dy + dy;
+      let x_y_half_step = x_half_step+'_'+y_half_step;
+      let x_y_full_step = x_full_step+'_'+y_full_step;
+      news[key] = {};
+      news[key]['x_half_step'] = x_half_step;
+      news[key]['y_half_step'] = y_half_step;    
+      news[key]['x_full_step'] = x_full_step;
+      news[key]['y_full_step'] = y_full_step;    
+      news[key]['x_y_half_step'] = x_y_half_step;
+      news[key]['x_y_full_step'] = x_y_full_step;
+  }
+return news; 
+}
+  
+function State(x,y){
+  let x_odd = x%2;
+  let y_odd = y%2;
+  if ( x_odd && y_odd ){return 'hyperspace';}
+  if ( !x_odd && !y_odd ){return 'vacuum';}
+  if ( x_odd && !y_odd ){return 'bond_vert';}
+  if ( !x_odd && y_odd ){return 'bond_horiz';}
+}
+ 
+function Restore_State()
+{  
+if( supports_html5_storage() == false ) {return false;} 
+if( typeof localStorage['board'] === 'undefined' ) {return false;} //nothing to restore. use var
+//order or restoration is very important here
+document.getElementById("input_area").value = localStorage['input_area'];
+Build_Puzzle(document.getElementById("input_area").value );
+//board = JSON.parse( localStorage['board'] );
+Set_Board(localStorage['board']);
+Join_Free_Atoms();
+Display_Objects();
+previous_board = JSON.parse( localStorage['previous_board'] );
+return true;
+} 
+  
+function Save_State(){
+if( supports_html5_storage() == false ) {return} 
+localStorage['board'] = JSON.stringify( board );
+localStorage['previous_board'] = JSON.stringify( previous_board );    
+localStorage['input_area'] = document.getElementById("input_area").value;
+}
+
+function supports_html5_storage() {
+  try {
+    return 'localStorage' in window && window['localStorage'] !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
+//free roaming code ----------------------------
+
+if(Restore_State() == false){
+  Build_Puzzle(document.getElementById("input_area").value);
+}
+  
+//disable arrow keys from scrolling page
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
+  
+var puzzles = {};
+puzzles['aye'] = `
+8_8
+W0W0W0W0W0W0W0W0W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+0000W0O0h0O0W0000
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W0W0W0W0W0W0W0W0W
+`;
+
+puzzles['suit'] = `
+4_2
+W0W0W0W0W0W0W
+0000000000000
+W000H000O000W
+0000000000000
+W00000W00000W
+0000000000000
+W00000000000W
+0000000000000
+W00000W00000W
+0000000000000
+W000H000O000W
+0000000000000
+W0W0000000W0W
+0000000000000
+00W0W0W0W0W00`;
+
+function Load_Puzzle(puzzle){
+  document.getElementById("input_area").value = puzzles[puzzle];
+  Build_Puzzle(document.getElementById("input_area").value);
+  Join_Free_Atoms();
+  Display_Objects();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script></body>
 </html>
