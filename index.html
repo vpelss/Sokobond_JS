@@ -2,8 +2,9 @@
 
 <!--
 //to do ---------------------------------------
+//puzzle name displayed
+//z r for tablet top left corner
 //win state
-//mouse click and move
 //scalable board - must use js selectall OR have a scroll mode!
 //sound
 //puzzle editor
@@ -86,6 +87,8 @@ Choose your puzzle:
 <a href=# onclick="Load_Puzzle('suit');">Suit</a>
 , 
 <a href=# onclick="Load_Puzzle('pendant');">Pendant</a>
+, 
+<a href=# onclick="Load_Puzzle('construction');">Construction</a>
 
 <p></p>
 Build Your Own Puzzle:
@@ -313,7 +316,7 @@ svg['4bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
 var how_to_play = `
 Zen needs no instruction...
 
-arrows: move 
+arrows: move : or click it dashed boxes
 r: reset
 z: undo
 
@@ -957,6 +960,25 @@ W00000000000W
 W0W0W000W0W0W
 0000000000000
 0000W0W0W0000
+`;
+
+puzzles['construction'] = `
+2_2
+W0W0W0W0W0W0W0W
+000000000000000
+W0H000000000H0W
+000.0.0.0.0.000
+W000O000000000W
+000.0.0.0.0.000
+W0000000000000W
+000.0.0-0.0.000
+W0000000000000W
+000.0.0.0.0.000
+W000000000C000W
+000.0.0-0.0.000
+W0H000000000H0W
+000000000000000
+W0W0W0W0W0W0W0W
 `;
 
 function Load_Puzzle(puzzle){
@@ -1203,7 +1225,7 @@ svg['4bond_horiz'] = `<svg width="100%" height="100%"  viewBox="0 0 50 5">
 var how_to_play = `
 Zen needs no instruction...
 
-arrows: move 
+arrows: move : or click it dashed boxes
 r: reset
 z: undo
 
@@ -1847,6 +1869,25 @@ W00000000000W
 W0W0W000W0W0W
 0000000000000
 0000W0W0W0000
+`;
+
+puzzles['construction'] = `
+2_2
+W0W0W0W0W0W0W0W
+000000000000000
+W0H000000000H0W
+000.0.0.0.0.000
+W000O000000000W
+000.0.0.0.0.000
+W0000000000000W
+000.0.0-0.0.000
+W0000000000000W
+000.0.0.0.0.000
+W000000000C000W
+000.0.0-0.0.000
+W0H000000000H0W
+000000000000000
+W0W0W0W0W0W0W0W
 `;
 
 function Load_Puzzle(puzzle){
