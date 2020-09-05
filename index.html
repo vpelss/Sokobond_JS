@@ -19,7 +19,7 @@
 table {
   border-spacing: 0px;
 }
-.N{}    
+    
 td {
   position:relative;
   margin: 0px;
@@ -62,8 +62,9 @@ svg{
   background-color: CornflowerBlue;
 }
 
-.selected{
-  background-color:yellow;  
+.move_to{ 
+  border: dashed;
+  border-width:1px;
 }
 </style>
 </head>
@@ -702,15 +703,17 @@ function Display_Objects(){
       let x_y = X_Y_To_String(x,y);
       let element = document.getElementById(x_y);
       let letter = board[x_y].letter;
-      //reset mouse move classes
-      element.classList.remove('selected');
-      element.classList.remove('N');
-      element.classList.remove('E');
-      element.classList.remove('W');
-      element.classList.remove('S');      
+      element.classList.remove('move_to'); //reset possible move classes
       if(typeof board[x_y] === 'undefined'){
         continue;
-      }
+      }      
+      //highlight possible moves
+      let news = Get_NEWS(board.x_me , board.y_me);
+      if( news['N']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['E']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['W']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['S']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      
       if(board[x_y].is_a === 'empty'){
         element.innerHTML = '<div class=content></div>';
         element.classList.remove("me");
@@ -843,12 +846,11 @@ function sound(src) {
 
 function Mouse_Down(x_y){
   let [x,y] = String_To_X_Y( x_y );
-  let element = document.getElementById(x_y);
   let news;
+  /*
+  let element = document.getElementById(x_y);
+
   //let class_array = [];
-/*  for(let num = 0 ; num < element.classList.length ; num++){
-      class_array[num] = element.classList[num]; 
-    }*/
   //stat or cancel move
   if((board.x_y_me == x_y) && (board[x_y].is_a === 'atom')) {
     news = Get_NEWS(x,y);
@@ -872,6 +874,12 @@ function Mouse_Down(x_y){
   if(element.classList.contains('E')){ Key_Input(39); }
   if(element.classList.contains('W')){ Key_Input(37); }
   if(element.classList.contains('S')){ Key_Input(40); }
+*/  
+  news = Get_NEWS(board.x_me , board.y_me);
+  if( news['N']['x_y_full_step'] === x_y ){ Key_Input(38); }
+  if( news['E']['x_y_full_step'] === x_y ){ Key_Input(39); }
+  if( news['W']['x_y_full_step'] === x_y ){ Key_Input(37); }
+  if( news['S']['x_y_full_step'] === x_y ){ Key_Input(40); }
 }
 
 
@@ -963,7 +971,7 @@ function Load_Puzzle(puzzle){
 <script id="jsbin-source-css" type="text/css">table {
   border-spacing: 0px;
 }
-.N{}    
+    
 td {
   position:relative;
   margin: 0px;
@@ -1006,8 +1014,9 @@ svg{
   background-color: CornflowerBlue;
 }
 
-.selected{
-  background-color:yellow;  
+.move_to{ 
+  border: dashed;
+  border-width:1px;
 }
 
 
@@ -1584,15 +1593,17 @@ function Display_Objects(){
       let x_y = X_Y_To_String(x,y);
       let element = document.getElementById(x_y);
       let letter = board[x_y].letter;
-      //reset mouse move classes
-      element.classList.remove('selected');
-      element.classList.remove('N');
-      element.classList.remove('E');
-      element.classList.remove('W');
-      element.classList.remove('S');      
+      element.classList.remove('move_to'); //reset possible move classes
       if(typeof board[x_y] === 'undefined'){
         continue;
-      }
+      }      
+      //highlight possible moves
+      let news = Get_NEWS(board.x_me , board.y_me);
+      if( news['N']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['E']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['W']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      if( news['S']['x_y_full_step'] === x_y ){ element.classList.add('move_to'); }
+      
       if(board[x_y].is_a === 'empty'){
         element.innerHTML = '<div class=content></div>';
         element.classList.remove("me");
@@ -1725,12 +1736,11 @@ function sound(src) {
 
 function Mouse_Down(x_y){
   let [x,y] = String_To_X_Y( x_y );
-  let element = document.getElementById(x_y);
   let news;
+  /*
+  let element = document.getElementById(x_y);
+
   //let class_array = [];
-/*  for(let num = 0 ; num < element.classList.length ; num++){
-      class_array[num] = element.classList[num]; 
-    }*/
   //stat or cancel move
   if((board.x_y_me == x_y) && (board[x_y].is_a === 'atom')) {
     news = Get_NEWS(x,y);
@@ -1754,6 +1764,12 @@ function Mouse_Down(x_y){
   if(element.classList.contains('E')){ Key_Input(39); }
   if(element.classList.contains('W')){ Key_Input(37); }
   if(element.classList.contains('S')){ Key_Input(40); }
+*/  
+  news = Get_NEWS(board.x_me , board.y_me);
+  if( news['N']['x_y_full_step'] === x_y ){ Key_Input(38); }
+  if( news['E']['x_y_full_step'] === x_y ){ Key_Input(39); }
+  if( news['W']['x_y_full_step'] === x_y ){ Key_Input(37); }
+  if( news['S']['x_y_full_step'] === x_y ){ Key_Input(40); }
 }
 
 
