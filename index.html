@@ -11,15 +11,15 @@
 
 <html>
 <head>
-<meta name="description" content="Sokobond JS - Chemical Zen">
+<meta name="description" content="Chemical Zen - Sokobond in JS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Sokobond JS - Chemical Zen</title>
+  <title>Chemical Zen - Sokobond in JS</title>
 <style id="jsbin-css">
 table {
   border-spacing: 0px;
 }
-    
+.N{}    
 td {
   position:relative;
   margin: 0px;
@@ -27,7 +27,15 @@ td {
   -border: solid;
   -border-width:1px;
   -overflow:visible;
-}  
+} 
+
+svg{
+  position:absolute;
+  top: 0px;
+  left: 0px;
+  display: block;
+  overflow:visible;
+}
    
 .vacuum{
   width: 50px;
@@ -54,16 +62,9 @@ td {
   background-color: CornflowerBlue;
 }
 
-svg{
-  position:absolute;
-  top: 0px;
-  left: 0px;
-  display: block;
-  overflow:visible;
+.selected{
+  background-color:yellow;  
 }
-
-
-
 </style>
 </head>
 
@@ -118,6 +119,19 @@ W0W0W0W0W0W0W0W0W
   
 <p></p>  
 Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
+  
+  <audio src="/music/good_enough.mp3" controls>
+<p>If you are reading this, it is because your browser does not support the audio element.</p>
+</audio>
+  
+  <!--
+var snd = new Audio("file.wav"); // buffers automatically when created
+snd.play();
+-->
+  
+  
+  
+  
 
 
 <script id="jsbin-javascript">
@@ -141,7 +155,7 @@ var direction = {
  'W' : { 'x':-1 , 'y':0  }  
 };
  
-var x_y_me='';
+//var x_y_me='';
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.  
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
@@ -587,8 +601,8 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
     board[move[key]] = temp[key];
   }
   //move me
-  x_y_me = move[board.x_me+'_'+board.y_me];
-  [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+  board.x_y_me = move[board.x_me+'_'+board.y_me];
+  [board.x_me,board.y_me] = String_To_X_Y(board.x_y_me);
   Join_Free_Atoms(); //for every atom, check for atoms that can bond
   }
 else{
@@ -616,8 +630,9 @@ touched = {};
                     
 input_string = input_string.trim();
 let lines = input_string.split("\n"); //1st line is my position
-x_y_me = lines.shift();
+let x_y_me = lines.shift();
 [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+board.x_y_me = x_y_me; //from string
 let y = -1;
 let board_string = '<table id="board_table">';
 for(let line of lines){
@@ -634,7 +649,7 @@ for(let line of lines){
        error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
        console.log(error_msg);
     }  
-    board_string = board_string + '<td id=' + x_y + ' class=' + state + '></td>'; 
+    board_string = board_string + '<td id=' + x_y + ' class=' + state + ' onmousedown="Mouse_Down(this.id);"></td>'; 
     
     //create the board[x_y] objects
     if(empty_chars.includes(letter)) { //0 indicates empty only 
@@ -668,6 +683,7 @@ function Set_Board(json_string){
   let new_board = JSON.parse(json_string);
   board.x_me = new_board.x_me;
   board.y_me = new_board.y_me;
+  board.x_y_me = new_board.x_y_me;
   board.width = new_board.width;
   board.height = new_board.height;
   for(let key in new_board){
@@ -686,6 +702,12 @@ function Display_Objects(){
       let x_y = X_Y_To_String(x,y);
       let element = document.getElementById(x_y);
       let letter = board[x_y].letter;
+      //reset mouse move classes
+      element.classList.remove('selected');
+      element.classList.remove('N');
+      element.classList.remove('E');
+      element.classList.remove('W');
+      element.classList.remove('S');      
       if(typeof board[x_y] === 'undefined'){
         continue;
       }
@@ -779,7 +801,6 @@ if( typeof localStorage['board'] === 'undefined' ) {return false;} //nothing to 
 //order or restoration is very important here
 document.getElementById("input_area").value = localStorage['input_area'];
 Build_Puzzle(document.getElementById("input_area").value );
-//board = JSON.parse( localStorage['board'] );
 Set_Board(localStorage['board']);
 Join_Free_Atoms();
 Display_Objects();
@@ -802,6 +823,58 @@ function supports_html5_storage() {
   }
 }
 
+//https://www.w3schools.com/graphics/game_sound.asp
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
+  }
+}
+// mySound = new sound("bounce.mp3");
+// mySound.play(); 
+
+function Mouse_Down(x_y){
+  let [x,y] = String_To_X_Y( x_y );
+  let element = document.getElementById(x_y);
+  let news;
+  //let class_array = [];
+/*  for(let num = 0 ; num < element.classList.length ; num++){
+      class_array[num] = element.classList[num]; 
+    }*/
+  //stat or cancel move
+  if((board.x_y_me == x_y) && (board[x_y].is_a === 'atom')) {
+    news = Get_NEWS(x,y);
+    element.classList.toggle('selected');        
+    //if(class_array.indexOf('selected') >= 0){ //set class of movable spots to N E W S
+    if( element.classList.contains('selected')){ //set class of movable spots to N E W S
+      document.getElementById(news['N']['x_y_full_step']).classList.add('N');   
+      document.getElementById(news['E']['x_y_full_step']).classList.add('E');   
+      document.getElementById(news['W']['x_y_full_step']).classList.add('W');   
+      document.getElementById(news['S']['x_y_full_step']).classList.add('S');   
+    }
+    else{//clear class of movable spots of N E W S
+      document.getElementById(news['N']['x_y_full_step']).classList.remove('N');   
+      document.getElementById(news['E']['x_y_full_step']).classList.remove('E');   
+      document.getElementById(news['W']['x_y_full_step']).classList.remove('W');   
+      document.getElementById(news['S']['x_y_full_step']).classList.remove('S'); 
+    }
+  }
+  //check to see if we are clicked in a moveable spot N E W S
+  if(element.classList.contains('N')){ Key_Input(38); }
+  if(element.classList.contains('E')){ Key_Input(39); }
+  if(element.classList.contains('W')){ Key_Input(37); }
+  if(element.classList.contains('S')){ Key_Input(40); }
+}
+
+
 //free roaming code ----------------------------
 
 if(Restore_State() == false){
@@ -815,7 +888,11 @@ window.addEventListener("keydown", function(e) {
         e.preventDefault();
     }
 }, false);
-  
+
+
+
+//puzzle vars ------------------------
+
 var puzzles = {};
 puzzles['aye'] = `8_8
 W0W0W0W0W0W0W0W0W
@@ -880,33 +957,13 @@ function Load_Puzzle(puzzle){
   Join_Free_Atoms();
   Display_Objects();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
 
 
 <script id="jsbin-source-css" type="text/css">table {
   border-spacing: 0px;
 }
-    
+.N{}    
 td {
   position:relative;
   margin: 0px;
@@ -914,7 +971,15 @@ td {
   -border: solid;
   -border-width:1px;
   -overflow:visible;
-}  
+} 
+
+svg{
+  position:absolute;
+  top: 0px;
+  left: 0px;
+  display: block;
+  overflow:visible;
+}
    
 .vacuum{
   width: 50px;
@@ -941,13 +1006,13 @@ td {
   background-color: CornflowerBlue;
 }
 
-svg{
-  position:absolute;
-  top: 0px;
-  left: 0px;
-  display: block;
-  overflow:visible;
+.selected{
+  background-color:yellow;  
 }
+
+
+
+
 
 
 </script>
@@ -972,7 +1037,7 @@ var direction = {
  'W' : { 'x':-1 , 'y':0  }  
 };
  
-var x_y_me='';
+//var x_y_me='';
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.  
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
@@ -1418,8 +1483,8 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
     board[move[key]] = temp[key];
   }
   //move me
-  x_y_me = move[board.x_me+'_'+board.y_me];
-  [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+  board.x_y_me = move[board.x_me+'_'+board.y_me];
+  [board.x_me,board.y_me] = String_To_X_Y(board.x_y_me);
   Join_Free_Atoms(); //for every atom, check for atoms that can bond
   }
 else{
@@ -1447,8 +1512,9 @@ touched = {};
                     
 input_string = input_string.trim();
 let lines = input_string.split("\n"); //1st line is my position
-x_y_me = lines.shift();
+let x_y_me = lines.shift();
 [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
+board.x_y_me = x_y_me; //from string
 let y = -1;
 let board_string = '<table id="board_table">';
 for(let line of lines){
@@ -1465,7 +1531,7 @@ for(let line of lines){
        error_msg = error_msg + 'Letter ' + letter + ' not allowed in ' + state + ' position + ' + x_y + '. ';
        console.log(error_msg);
     }  
-    board_string = board_string + '<td id=' + x_y + ' class=' + state + '></td>'; 
+    board_string = board_string + '<td id=' + x_y + ' class=' + state + ' onmousedown="Mouse_Down(this.id);"></td>'; 
     
     //create the board[x_y] objects
     if(empty_chars.includes(letter)) { //0 indicates empty only 
@@ -1499,6 +1565,7 @@ function Set_Board(json_string){
   let new_board = JSON.parse(json_string);
   board.x_me = new_board.x_me;
   board.y_me = new_board.y_me;
+  board.x_y_me = new_board.x_y_me;
   board.width = new_board.width;
   board.height = new_board.height;
   for(let key in new_board){
@@ -1517,6 +1584,12 @@ function Display_Objects(){
       let x_y = X_Y_To_String(x,y);
       let element = document.getElementById(x_y);
       let letter = board[x_y].letter;
+      //reset mouse move classes
+      element.classList.remove('selected');
+      element.classList.remove('N');
+      element.classList.remove('E');
+      element.classList.remove('W');
+      element.classList.remove('S');      
       if(typeof board[x_y] === 'undefined'){
         continue;
       }
@@ -1610,7 +1683,6 @@ if( typeof localStorage['board'] === 'undefined' ) {return false;} //nothing to 
 //order or restoration is very important here
 document.getElementById("input_area").value = localStorage['input_area'];
 Build_Puzzle(document.getElementById("input_area").value );
-//board = JSON.parse( localStorage['board'] );
 Set_Board(localStorage['board']);
 Join_Free_Atoms();
 Display_Objects();
@@ -1633,6 +1705,58 @@ function supports_html5_storage() {
   }
 }
 
+//https://www.w3schools.com/graphics/game_sound.asp
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
+  }
+}
+// mySound = new sound("bounce.mp3");
+// mySound.play(); 
+
+function Mouse_Down(x_y){
+  let [x,y] = String_To_X_Y( x_y );
+  let element = document.getElementById(x_y);
+  let news;
+  //let class_array = [];
+/*  for(let num = 0 ; num < element.classList.length ; num++){
+      class_array[num] = element.classList[num]; 
+    }*/
+  //stat or cancel move
+  if((board.x_y_me == x_y) && (board[x_y].is_a === 'atom')) {
+    news = Get_NEWS(x,y);
+    element.classList.toggle('selected');        
+    //if(class_array.indexOf('selected') >= 0){ //set class of movable spots to N E W S
+    if( element.classList.contains('selected')){ //set class of movable spots to N E W S
+      document.getElementById(news['N']['x_y_full_step']).classList.add('N');   
+      document.getElementById(news['E']['x_y_full_step']).classList.add('E');   
+      document.getElementById(news['W']['x_y_full_step']).classList.add('W');   
+      document.getElementById(news['S']['x_y_full_step']).classList.add('S');   
+    }
+    else{//clear class of movable spots of N E W S
+      document.getElementById(news['N']['x_y_full_step']).classList.remove('N');   
+      document.getElementById(news['E']['x_y_full_step']).classList.remove('E');   
+      document.getElementById(news['W']['x_y_full_step']).classList.remove('W');   
+      document.getElementById(news['S']['x_y_full_step']).classList.remove('S'); 
+    }
+  }
+  //check to see if we are clicked in a moveable spot N E W S
+  if(element.classList.contains('N')){ Key_Input(38); }
+  if(element.classList.contains('E')){ Key_Input(39); }
+  if(element.classList.contains('W')){ Key_Input(37); }
+  if(element.classList.contains('S')){ Key_Input(40); }
+}
+
+
 //free roaming code ----------------------------
 
 if(Restore_State() == false){
@@ -1646,7 +1770,11 @@ window.addEventListener("keydown", function(e) {
         e.preventDefault();
     }
 }, false);
-  
+
+
+
+//puzzle vars ------------------------
+
 var puzzles = {};
 puzzles['aye'] = `8_8
 W0W0W0W0W0W0W0W0W
