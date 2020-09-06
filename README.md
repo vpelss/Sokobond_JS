@@ -1,9 +1,9 @@
 # Sokobond_JS
-My latest programming project is a Java Script recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. I have still much to do. Sound, many graphics, moving on a phone without a keyboard, responsive screen sizing, winning routines, etc....
+My latest programming project is a Java Script recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. I have still much to do. Sound, responsive screen sizing, etc....
 
-After the game works, maybe I will attempt to make a graphical puzzle editor to replace the manual string editor.
+I will attempt to make a graphical puzzle editor to replace the manual string editor.
 
-It is written in JS. There are no JS libraries used yet. I plan to avoid them if possible. I am using SVG (Scalable Vector Graphics) for the images. So far so good.
+It is written in JS. There are no JS libraries used yet. I plan to avoid them if possible. I am using SVG (Scalable Vector Graphics) for the images.
 
 I still use tables, as they work better than pure DIV / CSS on game grids. CSS, pthuey!
 
