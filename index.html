@@ -3,7 +3,6 @@
 <!--
 //to do ---------------------------------------
 //puzzle name displayed
-//z r for tablet top left corner
 //scalable board - must use js selectall OR have a scroll mode!
 //sound
 //puzzle editor
@@ -18,6 +17,19 @@
 <style id="jsbin-css">
 table {
   border-spacing: 0px;
+}
+
+#board{
+-position: relative;   
+}
+
+#puzzle_title{
+ font-size: larger;
+ position:absolute; 
+ z-index: 99;
+ top: 25px;
+ left: 190px;
+ -text-align: center;
 }
 
 @keyframes animatezoom{
@@ -133,24 +145,7 @@ Choose your puzzle:
 Build Your Own Puzzle:
 <br>  
 <textarea id="input_area" rows="4" cols="50">
-8_8
-W0W0W0W0W0W0W0W0W
-00000000000000000
-W000h0H0h000h000W
-00000000000000000
-W000000000H00000W
-0000000-000-00000
-W0W0W0C00000W0W0W
-0000000+000000000
-0000W000C000W0000
-0000000.000000000
-W0W0W0000000W0W0W
-00000000000000000
-W00000H000H00000W
-00000000000000000
-W000h000h000h000W
-00000000000000000
-W0W0W0W0W0W0W0W0W
+
 </textarea>
   
 <form action="#">
@@ -197,9 +192,9 @@ var direction = {
  'E' : { 'x':1 , 'y':0  },
  'W' : { 'x':-1 , 'y':0  }  
 };
- 
-var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
-//allows us to save JSON.stringify(board) then easily rebuild each object on board.  
+
+//allows us to save JSON.stringify(board) then easily rebuild each object on board.
+var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier   
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
 var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
@@ -777,7 +772,8 @@ let x_y_me = lines.shift();
 [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
 board.x_y_me = x_y_me; //from string
 let y = -1;
-let board_string = '<table id="board_table">';
+let board_string = '<div id="puzzle_title">title</div>';
+board_string = board_string + '<table id="board_table">';
 for(let line of lines){
   y++;
   board_string = board_string + '<tr>';
@@ -796,7 +792,7 @@ for(let line of lines){
     
     //create the board[x_y] objects
     if(empty_chars.includes(letter)) { //0 indicates empty only 
-      board[x_y] = new Empty(x,y);
+      board[x_y] = new Empty(x,y,letter);
     } 
     if( bond_chars.includes(letter) ) {
       board[x_y] = new Bond(x,y,parseInt(letter));
@@ -819,23 +815,38 @@ if(error_msg !== ''){
  alert(error_msg); 
 }
 Join_Free_Atoms();
-Display_Objects();
+Display_Objects();   
+//set up r and z for tablets. only add listeners once!
+let element;
+element = document.getElementById('0_0');
+element.addEventListener("mousedown", function(){Key_Input(90);} );  
+element = document.getElementById('2_0');
+element.addEventListener("click", function(){Key_Input(82);} );   
 }
- 
+
+//as we can only easily save objects as json, and json strips the methods, we need this routine to restore the json & add the methods from the objects
 function Set_Board(json_string){
-  let new_board = JSON.parse(json_string);
+  board = JSON.parse(json_string);
+  //let new_board = JSON.parse(json_string);
+  /*
   board.x_me = new_board.x_me;
   board.y_me = new_board.y_me;
   board.x_y_me = new_board.x_y_me;
   board.width = new_board.width;
   board.height = new_board.height;
-  for(let key in new_board){
+  */
+  //for(let key in new_board){
+  for(let key in board){
     let x , y;
     [x,y] = String_To_X_Y(key);
-    if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
-    if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
-    if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
-    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
+    //if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
+    //if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
+    //if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
+    //if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
+    if(board[key].is_a === 'wall'){board[key] = new Wall(x,y,board[key].letter);}
+    if(board[key].is_a === 'empty'){board[key] = new Empty(x,y,board[key].letter);}
+    if(board[key].is_a === 'bond'){board[key] = new Bond(x,y,board[key].value);}
+    if(board[key].is_a === 'atom'){board[key] = new Atom(x,y,board[key].letter);}    
   }
 }
   
@@ -843,12 +854,10 @@ function Display_Objects(){
   for(let y = 0 ; y <= board.height ; y++){
     for(let x = 0 ; x <= board.width ; x++){
       let x_y = X_Y_To_String(x,y);
-      let element = document.getElementById(x_y);
+      if(typeof board[x_y] === 'undefined'){continue;}//nothing here      
       let letter = board[x_y].letter;
+      let element = document.getElementById(x_y);
       element.classList.remove('move_to'); //reset possible move classes
-      if(typeof board[x_y] === 'undefined'){
-        continue;
-      }      
       //highlight possible moves
       let news = Get_NEWS(board.x_me , board.y_me);
       if( news.N.x_y_full_step === x_y ){ element.classList.add('move_to'); }
@@ -886,6 +895,14 @@ function Display_Objects(){
           
     }
   }
+//set up r and z for tablets
+let element;
+element = document.getElementById('0_0');
+element.innerHTML = '<center>z</center>';
+element.classList.add('move_to');  
+element = document.getElementById('2_0');
+element.innerHTML = '<center>r</center>';
+element.classList.add('move_to');  
 }
 
 //general functions -------------------------
@@ -1011,25 +1028,17 @@ function Mouse_Down(x_y){
   if( news.S.x_y_full_step === x_y ){ Key_Input(40); }
 }
 
-
-//free roaming code ----------------------------
-
-if(Restore_State() == false){
-  Build_Puzzle(document.getElementById("input_area").value);
+function Load_Puzzle(puzzle){
+  let element = document.getElementById('win');
+  element.classList.remove('win');
+  element.innerHTML = '';
+  Build_Puzzle( puzzles[puzzle] );
+  document.getElementById("input_area").value = puzzles[puzzle];
+  //Build_Puzzle(document.getElementById("input_area").value);
+  Join_Free_Atoms();
+  Display_Objects();
+  Save_State();
 }
-  
-//let element = document.getElementById('win');
-//element.innerHTML = svg.win;
-
-//disable arrow keys from scrolling page
-window.addEventListener("keydown", function(e) {
-    // space and arrow keys
-    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-    }
-}, false);
-
-
 
 //puzzle vars ------------------------
 
@@ -1109,18 +1118,40 @@ W0H000000000H0W
 W0W0W0W0W0W0W0W
 `;
 
-function Load_Puzzle(puzzle){
-  document.getElementById("input_area").value = puzzles[puzzle];
-  Build_Puzzle(document.getElementById("input_area").value);
-  Join_Free_Atoms();
-  Display_Objects();
-  Save_State();
+//free roaming code ----------------------------
+
+if(Restore_State() == false){  //Build_Puzzle(document.getElementById("input_area").value);
+ Load_Puzzle('aye');
 }
+  
+//let element = document.getElementById('win');
+//element.innerHTML = svg.win;
+
+//disable arrow keys from scrolling page
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
 </script>
 
 
 <script id="jsbin-source-css" type="text/css">table {
   border-spacing: 0px;
+}
+
+#board{
+-position: relative;   
+}
+
+#puzzle_title{
+ font-size: larger;
+ position:absolute; 
+ z-index: 99;
+ top: 25px;
+ left: 190px;
+ -text-align: center;
 }
 
 @keyframes animatezoom{
@@ -1214,6 +1245,7 @@ svg{
 
 
 
+
 </script>
 
 <script id="jsbin-source-javascript" type="text/javascript">//global vars ----------------------
@@ -1235,9 +1267,9 @@ var direction = {
  'E' : { 'x':1 , 'y':0  },
  'W' : { 'x':-1 , 'y':0  }  
 };
- 
-var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier 
-//allows us to save JSON.stringify(board) then easily rebuild each object on board.  
+
+//allows us to save JSON.stringify(board) then easily rebuild each object on board.
+var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier   
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
 var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
@@ -1815,7 +1847,8 @@ let x_y_me = lines.shift();
 [board.x_me,board.y_me] = String_To_X_Y(x_y_me);
 board.x_y_me = x_y_me; //from string
 let y = -1;
-let board_string = '<table id="board_table">';
+let board_string = '<div id="puzzle_title">title</div>';
+board_string = board_string + '<table id="board_table">';
 for(let line of lines){
   y++;
   board_string = board_string + '<tr>';
@@ -1834,7 +1867,7 @@ for(let line of lines){
     
     //create the board[x_y] objects
     if(empty_chars.includes(letter)) { //0 indicates empty only 
-      board[x_y] = new Empty(x,y);
+      board[x_y] = new Empty(x,y,letter);
     } 
     if( bond_chars.includes(letter) ) {
       board[x_y] = new Bond(x,y,parseInt(letter));
@@ -1857,23 +1890,38 @@ if(error_msg !== ''){
  alert(error_msg); 
 }
 Join_Free_Atoms();
-Display_Objects();
+Display_Objects();   
+//set up r and z for tablets. only add listeners once!
+let element;
+element = document.getElementById('0_0');
+element.addEventListener("mousedown", function(){Key_Input(90);} );  
+element = document.getElementById('2_0');
+element.addEventListener("click", function(){Key_Input(82);} );   
 }
- 
+
+//as we can only easily save objects as json, and json strips the methods, we need this routine to restore the json & add the methods from the objects
 function Set_Board(json_string){
-  let new_board = JSON.parse(json_string);
+  board = JSON.parse(json_string);
+  //let new_board = JSON.parse(json_string);
+  /*
   board.x_me = new_board.x_me;
   board.y_me = new_board.y_me;
   board.x_y_me = new_board.x_y_me;
   board.width = new_board.width;
   board.height = new_board.height;
-  for(let key in new_board){
+  */
+  //for(let key in new_board){
+  for(let key in board){
     let x , y;
     [x,y] = String_To_X_Y(key);
-    if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
-    if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
-    if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
-    if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
+    //if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
+    //if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
+    //if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
+    //if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
+    if(board[key].is_a === 'wall'){board[key] = new Wall(x,y,board[key].letter);}
+    if(board[key].is_a === 'empty'){board[key] = new Empty(x,y,board[key].letter);}
+    if(board[key].is_a === 'bond'){board[key] = new Bond(x,y,board[key].value);}
+    if(board[key].is_a === 'atom'){board[key] = new Atom(x,y,board[key].letter);}    
   }
 }
   
@@ -1881,12 +1929,10 @@ function Display_Objects(){
   for(let y = 0 ; y <= board.height ; y++){
     for(let x = 0 ; x <= board.width ; x++){
       let x_y = X_Y_To_String(x,y);
-      let element = document.getElementById(x_y);
+      if(typeof board[x_y] === 'undefined'){continue;}//nothing here      
       let letter = board[x_y].letter;
+      let element = document.getElementById(x_y);
       element.classList.remove('move_to'); //reset possible move classes
-      if(typeof board[x_y] === 'undefined'){
-        continue;
-      }      
       //highlight possible moves
       let news = Get_NEWS(board.x_me , board.y_me);
       if( news.N.x_y_full_step === x_y ){ element.classList.add('move_to'); }
@@ -1924,6 +1970,14 @@ function Display_Objects(){
           
     }
   }
+//set up r and z for tablets
+let element;
+element = document.getElementById('0_0');
+element.innerHTML = '<center>z</center>';
+element.classList.add('move_to');  
+element = document.getElementById('2_0');
+element.innerHTML = '<center>r</center>';
+element.classList.add('move_to');  
 }
 
 //general functions -------------------------
@@ -2049,25 +2103,17 @@ function Mouse_Down(x_y){
   if( news.S.x_y_full_step === x_y ){ Key_Input(40); }
 }
 
-
-//free roaming code ----------------------------
-
-if(Restore_State() == false){
-  Build_Puzzle(document.getElementById("input_area").value);
+function Load_Puzzle(puzzle){
+  let element = document.getElementById('win');
+  element.classList.remove('win');
+  element.innerHTML = '';
+  Build_Puzzle( puzzles[puzzle] );
+  document.getElementById("input_area").value = puzzles[puzzle];
+  //Build_Puzzle(document.getElementById("input_area").value);
+  Join_Free_Atoms();
+  Display_Objects();
+  Save_State();
 }
-  
-//let element = document.getElementById('win');
-//element.innerHTML = svg.win;
-
-//disable arrow keys from scrolling page
-window.addEventListener("keydown", function(e) {
-    // space and arrow keys
-    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-    }
-}, false);
-
-
 
 //puzzle vars ------------------------
 
@@ -2147,13 +2193,24 @@ W0H000000000H0W
 W0W0W0W0W0W0W0W
 `;
 
-function Load_Puzzle(puzzle){
-  document.getElementById("input_area").value = puzzles[puzzle];
-  Build_Puzzle(document.getElementById("input_area").value);
-  Join_Free_Atoms();
-  Display_Objects();
-  Save_State();
+//free roaming code ----------------------------
+
+if(Restore_State() == false){  //Build_Puzzle(document.getElementById("input_area").value);
+ Load_Puzzle('aye');
 }
+  
+//let element = document.getElementById('win');
+//element.innerHTML = svg.win;
+
+//disable arrow keys from scrolling page
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
+
+
 
 
 
