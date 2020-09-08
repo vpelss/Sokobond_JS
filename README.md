@@ -2,6 +2,7 @@
 My latest programming project is a Java Script recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. I have still much to do. Sound, responsive screen sizing, etc....
 
 I will attempt to make a graphical puzzle editor to replace the manual string editor.
+I also intend to try and create an algoritm to generate puzzles. That should be fun to attempt.
 
 It is written in JS. There are no JS libraries used yet. I plan to avoid them if possible. I am using SVG (Scalable Vector Graphics) for the images.
 
