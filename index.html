@@ -2,7 +2,6 @@
 
 <!--
 //to do ---------------------------------------
-//puzzle name displayed
 //scalable board - must use js selectall OR have a scroll mode!
 //sound
 //puzzle editor
@@ -30,6 +29,8 @@ table {
  top: 25px;
  left: 190px;
  -text-align: center;
+ color: white;
+ text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
 }
 
 @keyframes animatezoom{
@@ -117,6 +118,14 @@ svg{
   border: dashed;
   border-width:1px;
 }
+
+
+
+
+
+
+
+
 </style>
 </head>
 
@@ -158,7 +167,7 @@ Build Your Own Puzzle:
 <p></p>  
 Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
   
-  <audio src="/music/good_enough.mp3" controls>
+  <audio src="" controls>
 <p>If you are reading this, it is because your browser does not support the audio element.</p>
 </audio>
   
@@ -543,7 +552,8 @@ function Atom(x , y , letter){ // Constructor
       if(board[x_y_full_step].is_a === 'atom'){
         if(board[x_y_full_step].Return_Free_Valence() > 0){
           if(board[x_y_half_step].is_a === 'empty'){
-          board[x_y_half_step] = new Bond(x_half_step,y_half_step,1); //add a bond
+            sound_add_bond.play();
+            board[x_y_half_step] = new Bond(x_half_step,y_half_step,1); //add a bond
           free_valence--;
           }
         }
@@ -603,6 +613,7 @@ function Bond(x,y,value){
         //reduce bond by 1. if 0, do not transmit force and return true
         board[x_y].value--;
         if(board[x_y].value <=0){
+          sound_sub_bond.play();
           board[x_y] = new Empty(this.x,this.y,'0'); //remove bond
           return true;
         }        
@@ -611,6 +622,7 @@ function Bond(x,y,value){
       if(board[x_y_half_step].letter === '+'){
         //if both joined atoms have free valences, join them
         if((board[transmitting_atom].Return_Free_Valence() > 0) && (board[receiving_atom].Return_Free_Valence() > 0)){
+          sound_add_bond.play();
           board[x_y].value++;
         }//if not ignore and continue
       }
@@ -744,6 +756,7 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
   }
 else{
     //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
+    sound_fail.play();
     Set_Board(premove_board);
   }
 Display_Objects();
@@ -851,12 +864,14 @@ function Set_Board(json_string){
 }
   
 function Display_Objects(){
+  let element = document.getElementById('puzzle_title');
+  element.innerHTML = board.title;
   for(let y = 0 ; y <= board.height ; y++){
     for(let x = 0 ; x <= board.width ; x++){
       let x_y = X_Y_To_String(x,y);
       if(typeof board[x_y] === 'undefined'){continue;}//nothing here      
       let letter = board[x_y].letter;
-      let element = document.getElementById(x_y);
+      element = document.getElementById(x_y);
       element.classList.remove('move_to'); //reset possible move classes
       //highlight possible moves
       let news = Get_NEWS(board.x_me , board.y_me);
@@ -896,7 +911,6 @@ function Display_Objects(){
     }
   }
 //set up r and z for tablets
-let element;
 element = document.getElementById('0_0');
 element.innerHTML = '<center>z</center>';
 element.classList.add('move_to');  
@@ -914,6 +928,13 @@ function Join_Free_Atoms(){
     }
   }  
 }
+
+function win_routine(){
+    sound_win.play();
+    let element = document.getElementById('win');
+    element.innerHTML = svg.win;
+    element.classList.add('win');
+}
  
 function Check_For_Win(){
   let free_valences = 0;
@@ -924,10 +945,7 @@ function Check_For_Win(){
   }
   if(free_valences === 0){
     //winner winner chicken diner
-    //setTimeout(function(){ alert("Winner, winner, chicken dinner"); }, 500);
-    let element = document.getElementById('win');
-    element.innerHTML = svg.win;
-    element.classList.add('win');
+    setTimeout( win_routine , 1000);
   }
 }
   
@@ -1019,6 +1037,11 @@ function sound(src) {
 // mySound = new sound("bounce.mp3");
 // mySound.play(); 
 
+var sound_fail = new sound("https://www.emogic.com/Sokobond_JS/Windows Critical Stop.mp3");
+var sound_add_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Insert.mp3");
+var sound_sub_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Remove.mp3");
+var sound_win = new sound("https://www.emogic.com/Sokobond_JS/Windows Notify Calendar.mp3");
+
 function Mouse_Down(x_y){
   let news;
   news = Get_NEWS(board.x_me , board.y_me);
@@ -1033,8 +1056,8 @@ function Load_Puzzle(puzzle){
   element.classList.remove('win');
   element.innerHTML = '';
   Build_Puzzle( puzzles[puzzle] );
+  board.title = puzzle;
   document.getElementById("input_area").value = puzzles[puzzle];
-  //Build_Puzzle(document.getElementById("input_area").value);
   Join_Free_Atoms();
   Display_Objects();
   Save_State();
@@ -1120,13 +1143,9 @@ W0W0W0W0W0W0W0W
 
 //free roaming code ----------------------------
 
-if(Restore_State() == false){  //Build_Puzzle(document.getElementById("input_area").value);
- Load_Puzzle('aye');
+if(Restore_State() == false){  Load_Puzzle('aye');
 }
   
-//let element = document.getElementById('win');
-//element.innerHTML = svg.win;
-
 //disable arrow keys from scrolling page
 window.addEventListener("keydown", function(e) {
     // space and arrow keys
@@ -1152,6 +1171,8 @@ window.addEventListener("keydown", function(e) {
  top: 25px;
  left: 190px;
  -text-align: center;
+ color: white;
+ text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
 }
 
 @keyframes animatezoom{
@@ -1618,7 +1639,8 @@ function Atom(x , y , letter){ // Constructor
       if(board[x_y_full_step].is_a === 'atom'){
         if(board[x_y_full_step].Return_Free_Valence() > 0){
           if(board[x_y_half_step].is_a === 'empty'){
-          board[x_y_half_step] = new Bond(x_half_step,y_half_step,1); //add a bond
+            sound_add_bond.play();
+            board[x_y_half_step] = new Bond(x_half_step,y_half_step,1); //add a bond
           free_valence--;
           }
         }
@@ -1678,6 +1700,7 @@ function Bond(x,y,value){
         //reduce bond by 1. if 0, do not transmit force and return true
         board[x_y].value--;
         if(board[x_y].value <=0){
+          sound_sub_bond.play();
           board[x_y] = new Empty(this.x,this.y,'0'); //remove bond
           return true;
         }        
@@ -1686,6 +1709,7 @@ function Bond(x,y,value){
       if(board[x_y_half_step].letter === '+'){
         //if both joined atoms have free valences, join them
         if((board[transmitting_atom].Return_Free_Valence() > 0) && (board[receiving_atom].Return_Free_Valence() > 0)){
+          sound_add_bond.play();
           board[x_y].value++;
         }//if not ignore and continue
       }
@@ -1819,6 +1843,7 @@ if ( board[board.x_me+'_'+board.y_me].Can_I_Move(NEWS) ){
   }
 else{
     //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects 
+    sound_fail.play();
     Set_Board(premove_board);
   }
 Display_Objects();
@@ -1926,12 +1951,14 @@ function Set_Board(json_string){
 }
   
 function Display_Objects(){
+  let element = document.getElementById('puzzle_title');
+  element.innerHTML = board.title;
   for(let y = 0 ; y <= board.height ; y++){
     for(let x = 0 ; x <= board.width ; x++){
       let x_y = X_Y_To_String(x,y);
       if(typeof board[x_y] === 'undefined'){continue;}//nothing here      
       let letter = board[x_y].letter;
-      let element = document.getElementById(x_y);
+      element = document.getElementById(x_y);
       element.classList.remove('move_to'); //reset possible move classes
       //highlight possible moves
       let news = Get_NEWS(board.x_me , board.y_me);
@@ -1971,7 +1998,6 @@ function Display_Objects(){
     }
   }
 //set up r and z for tablets
-let element;
 element = document.getElementById('0_0');
 element.innerHTML = '<center>z</center>';
 element.classList.add('move_to');  
@@ -1989,6 +2015,13 @@ function Join_Free_Atoms(){
     }
   }  
 }
+
+function win_routine(){
+    sound_win.play();
+    let element = document.getElementById('win');
+    element.innerHTML = svg.win;
+    element.classList.add('win');
+}
  
 function Check_For_Win(){
   let free_valences = 0;
@@ -1999,10 +2032,7 @@ function Check_For_Win(){
   }
   if(free_valences === 0){
     //winner winner chicken diner
-    //setTimeout(function(){ alert("Winner, winner, chicken dinner"); }, 500);
-    let element = document.getElementById('win');
-    element.innerHTML = svg.win;
-    element.classList.add('win');
+    setTimeout( win_routine , 1000);
   }
 }
   
@@ -2094,6 +2124,11 @@ function sound(src) {
 // mySound = new sound("bounce.mp3");
 // mySound.play(); 
 
+var sound_fail = new sound("https://www.emogic.com/Sokobond_JS/Windows Critical Stop.mp3");
+var sound_add_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Insert.mp3");
+var sound_sub_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Remove.mp3");
+var sound_win = new sound("https://www.emogic.com/Sokobond_JS/Windows Notify Calendar.mp3");
+
 function Mouse_Down(x_y){
   let news;
   news = Get_NEWS(board.x_me , board.y_me);
@@ -2108,8 +2143,8 @@ function Load_Puzzle(puzzle){
   element.classList.remove('win');
   element.innerHTML = '';
   Build_Puzzle( puzzles[puzzle] );
+  board.title = puzzle;
   document.getElementById("input_area").value = puzzles[puzzle];
-  //Build_Puzzle(document.getElementById("input_area").value);
   Join_Free_Atoms();
   Display_Objects();
   Save_State();
@@ -2195,40 +2230,14 @@ W0W0W0W0W0W0W0W
 
 //free roaming code ----------------------------
 
-if(Restore_State() == false){  //Build_Puzzle(document.getElementById("input_area").value);
- Load_Puzzle('aye');
+if(Restore_State() == false){  Load_Puzzle('aye');
 }
   
-//let element = document.getElementById('win');
-//element.innerHTML = svg.win;
-
 //disable arrow keys from scrolling page
 window.addEventListener("keydown", function(e) {
     // space and arrow keys
     if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
         e.preventDefault();
     }
-}, false);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</script></body>
+}, false);</script></body>
 </html>
