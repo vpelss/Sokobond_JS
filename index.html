@@ -118,14 +118,6 @@ svg{
   border: dashed;
   border-width:1px;
 }
-
-
-
-
-
-
-
-
 </style>
 </head>
 
@@ -164,8 +156,12 @@ Build Your Own Puzzle:
 
 </form>
   
-<p></p>  
+<p>  
 Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
+</p>
+<p>
+By <a href='https://www.emogic.com' target='_blank'>Emogic</a>  
+</p>
   
   <audio src="" controls>
 <p>If you are reading this, it is because your browser does not support the audio element.</p>
@@ -565,8 +561,6 @@ function Atom(x , y , letter){ // Constructor
     //look in all directions and calculate  
     let sum = 0;
     let free_valence;
-    //let x_test;
-    //let y_test;
     let all_news =  Get_NEWS(this.x,this.y); 
     for(let key in all_news){
       let x_y = all_news[key].x_y_half_step;
@@ -643,7 +637,6 @@ function Bond(x,y,value){
     //move bond. second half of calculation, see above.
     this.x = half_move_x + dx;
     this.y = half_move_y + dy;
-    //var x_y_full_step = 
     move[x_y] = '' + this.x + '_' + this.y; //used to move bond if we are good to go
     return true;     
   };
@@ -840,22 +833,9 @@ element.addEventListener("click", function(){Key_Input(82);} );
 //as we can only easily save objects as json, and json strips the methods, we need this routine to restore the json & add the methods from the objects
 function Set_Board(json_string){
   board = JSON.parse(json_string);
-  //let new_board = JSON.parse(json_string);
-  /*
-  board.x_me = new_board.x_me;
-  board.y_me = new_board.y_me;
-  board.x_y_me = new_board.x_y_me;
-  board.width = new_board.width;
-  board.height = new_board.height;
-  */
-  //for(let key in new_board){
   for(let key in board){
     let x , y;
     [x,y] = String_To_X_Y(key);
-    //if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
-    //if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
-    //if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
-    //if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
     if(board[key].is_a === 'wall'){board[key] = new Wall(x,y,board[key].letter);}
     if(board[key].is_a === 'empty'){board[key] = new Empty(x,y,board[key].letter);}
     if(board[key].is_a === 'bond'){board[key] = new Bond(x,y,board[key].value);}
@@ -1034,8 +1014,6 @@ function sound(src) {
     this.sound.pause();
   };
 }
-// mySound = new sound("bounce.mp3");
-// mySound.play(); 
 
 var sound_fail = new sound("https://www.emogic.com/Sokobond_JS/Windows Critical Stop.mp3");
 var sound_add_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Insert.mp3");
@@ -1652,8 +1630,6 @@ function Atom(x , y , letter){ // Constructor
     //look in all directions and calculate  
     let sum = 0;
     let free_valence;
-    //let x_test;
-    //let y_test;
     let all_news =  Get_NEWS(this.x,this.y); 
     for(let key in all_news){
       let x_y = all_news[key].x_y_half_step;
@@ -1730,7 +1706,6 @@ function Bond(x,y,value){
     //move bond. second half of calculation, see above.
     this.x = half_move_x + dx;
     this.y = half_move_y + dy;
-    //var x_y_full_step = 
     move[x_y] = '' + this.x + '_' + this.y; //used to move bond if we are good to go
     return true;     
   };
@@ -1927,22 +1902,9 @@ element.addEventListener("click", function(){Key_Input(82);} );
 //as we can only easily save objects as json, and json strips the methods, we need this routine to restore the json & add the methods from the objects
 function Set_Board(json_string){
   board = JSON.parse(json_string);
-  //let new_board = JSON.parse(json_string);
-  /*
-  board.x_me = new_board.x_me;
-  board.y_me = new_board.y_me;
-  board.x_y_me = new_board.x_y_me;
-  board.width = new_board.width;
-  board.height = new_board.height;
-  */
-  //for(let key in new_board){
   for(let key in board){
     let x , y;
     [x,y] = String_To_X_Y(key);
-    //if(new_board[key].is_a === 'wall'){board[key] = new Wall(x,y,new_board[key].letter);}
-    //if(new_board[key].is_a === 'empty'){board[key] = new Empty(x,y,new_board[key].letter);}
-    //if(new_board[key].is_a === 'bond'){board[key] = new Bond(x,y,new_board[key].value);}
-    //if(new_board[key].is_a === 'atom'){board[key] = new Atom(x,y,new_board[key].letter);}    
     if(board[key].is_a === 'wall'){board[key] = new Wall(x,y,board[key].letter);}
     if(board[key].is_a === 'empty'){board[key] = new Empty(x,y,board[key].letter);}
     if(board[key].is_a === 'bond'){board[key] = new Bond(x,y,board[key].value);}
@@ -2121,8 +2083,6 @@ function sound(src) {
     this.sound.pause();
   };
 }
-// mySound = new sound("bounce.mp3");
-// mySound.play(); 
 
 var sound_fail = new sound("https://www.emogic.com/Sokobond_JS/Windows Critical Stop.mp3");
 var sound_add_bond = new sound("https://www.emogic.com/Sokobond_JS/Windows Hardware Insert.mp3");
@@ -2239,5 +2199,11 @@ window.addEventListener("keydown", function(e) {
     if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
         e.preventDefault();
     }
-}, false);</script></body>
+}, false);
+
+
+
+
+
+</script></body>
 </html>
