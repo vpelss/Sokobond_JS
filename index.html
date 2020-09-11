@@ -7,171 +7,174 @@
 -->
 
 <html>
-<head>
-<meta name="description" content="Chemical Zen - Sokobond in JS">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Chemical Zen - Sokobond in JS</title>
-<style id="jsbin-css">
+
+  <head>
+    <meta name="description" content="Chemical Zen - Sokobond in JS">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Chemical Zen - Sokobond in JS</title>
+  <style id="jsbin-css">
 table {
   border-spacing: 0px;
 }
 
-#board{
--position: relative;   
+#board {
 }
 
-#puzzle_title{
- font-size: larger;
- position:absolute; 
- z-index: 99;
- top: 25px;
- left: 190px;
- -text-align: center;
- color: white;
- text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
+#puzzle_title {
+  font-size: larger;
+  position: absolute;
+  z-index: 99;
+  top: 25px;
+  left: 190px;
+  color: white;
+  text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
 }
 
-@keyframes animatezoom{
-from{top:0; left:0; transform:scale(0)}   
-to{top:25%; left:25%; transform:scale(1); }  
+@keyframes animatezoom {
+  from {
+    top: 0;
+    left: 0;
+    transform: scale(0)
+  }
+
+  to {
+    top: 25%;
+    left: 25%;
+    transform: scale(1);
+  }
 }
 
-.win{ 
-    position:absolute;
-    top:25%; 
-    left:25%;
-    width:210px;
-   z-index: 99;
-  
+.win {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 210px;
+  z-index: 99;
+
   animation-name: animatezoom;
   animation-duration: 4s;
 }
-    
-.win_vacuum{ 
-  width: 100px;
-  height: 100px;  
-}
-  
-.win_bond_vert{ 
-  width: 10px; 
-  height: 100px;
-  }
 
-.win_bond_horiz{
+.win_vacuum {
+  width: 100px;
+  height: 100px;
+}
+
+.win_bond_vert {
+  width: 10px;
+  height: 100px;
+}
+
+.win_bond_horiz {
   width: 100px;
   height: 10px;
-  }
-  
-.win_hyperspace{
-  text-align: center;  
-  width: 10px;  
-  height: 10px;   
-  }
- 
+}
+
+.win_hyperspace {
+  text-align: center;
+  width: 10px;
+  height: 10px;
+}
+
 
 td {
-  position:relative;
+  position: relative;
   margin: 0px;
-  padding: 0px;  
+  padding: 0px;
   -border: solid;
-  -border-width:1px;
-  -overflow:visible;
-} 
+  -border-width: 1px;
+  -overflow: visible;
+}
 
-svg{
-  position:absolute;
+svg {
+  position: absolute;
   top: 0px;
   left: 0px;
   display: block;
-  overflow:visible;
+  overflow: visible;
 }
 
-.vacuum{ 
+.vacuum {
   width: 50px;
-  height: 50px;  
-}
-  
-.bond_vert{ 
-  width: 5px; 
   height: 50px;
-  }
+}
 
-.bond_horiz{
+.bond_vert {
+  width: 5px;
+  height: 50px;
+}
+
+.bond_horiz {
   width: 50px;
   height: 5px;
-  }
-  
-.hyperspace{
-  text-align: center;  
-  width: 5px;  
-  height: 5px;   
-  }
-   
+}
 
-.wall{
+.hyperspace {
+  text-align: center;
+  width: 5px;
+  height: 5px;
+}
+
+
+.wall {
   background-color: CornflowerBlue;
 }
 
-.move_to{ 
+.move_to {
   border: dashed;
-  border-width:1px;
+  border-width: 1px;
 }
 </style>
 </head>
 
-<body  ONKEYUP="Key_Input(event.keyCode);">
+  <body ONKEYUP="Key_Input(event.keyCode);">
 
-<div id='win'></div>
-<div id=board></div>
-  
-<br>
-<form action="#">
-<input type="button" value="How To Play" onclick='alert(how_to_play);'>
-</form>
-  
-<p></p>
-Choose your puzzle:
-<br>
-<a href=# onclick="Load_Puzzle('aye');">Aye</a> 
-, 
-<a href=# onclick="Load_Puzzle('suit');">Suit</a>
-, 
-<a href=# onclick="Load_Puzzle('pendant');">Pendant</a>
-, 
-<a href=# onclick="Load_Puzzle('construction');">Construction</a>
+    <div id='win'></div>
+    <div id=board></div>
 
-<p></p>
-Build Your Own Puzzle:
-<br>  
-<textarea id="input_area" rows="4" cols="50">
+    <br>
+    <form action="#">
+      <input type="button" value="How To Play" onclick='alert(how_to_play);'>
+    </form>
+
+    <p></p>
+    Choose your puzzle:
+    <br>
+    <a href=# onclick="Load_Puzzle('aye');">Aye</a>
+    ,
+    <a href=# onclick="Load_Puzzle('suit');">Suit</a>
+    ,
+    <a href=# onclick="Load_Puzzle('pendant');">Pendant</a>
+    ,
+    <a href=# onclick="Load_Puzzle('construction');">Construction</a>
+
+    <p></p>
+    Build Your Own Puzzle:
+    <br>
+    <textarea id="input_area" rows="4" cols="50">
 </textarea>
-  
-<form action="#">
-<input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
 
-<input type="button" value="How to build a puzzle" onclick='alert(building_a_puzzle);'>
+    <form action="#">
+      <input type="button" value="Refresh Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
 
-</form>
-  
-<p>  
-Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
-</p>
-<p>
-By <a href='https://www.emogic.com' target='_blank'>Emogic</a>  
-</p>
-  
-<audio autoplay controls>
-  <source src="http://emogic.com/Sokobond_JS/Open to the Elements.mp3_" type="audio/mpeg">  
-<p>Your browser does not support the audio element.</p>
-</audio>
-  
-  
-  
-  
+      <input type="button" value="How to build a puzzle" onclick='alert(building_a_puzzle);'>
 
+    </form>
 
-<script id="jsbin-javascript">
+    <p>
+      Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
+    </p>
+    <p>
+      By <a href='https://www.emogic.com' target='_blank'>Emogic</a>
+    </p>
+
+    <audio autoplay controls>
+      <source src="http://emogic.com/Sokobond_JS/Open to the Elements.mp3_" type="audio/mpeg">
+      <p>Your browser does not support the audio element.</p>
+    </audio>
+
+  <script id="jsbin-javascript">
 //global vars ----------------------
 var error_msg = '';
 var input_string;
@@ -1216,114 +1219,123 @@ window.addEventListener("keydown", function(e) {
   border-spacing: 0px;
 }
 
-#board{
--position: relative;   
+#board {
 }
 
-#puzzle_title{
- font-size: larger;
- position:absolute; 
- z-index: 99;
- top: 25px;
- left: 190px;
- -text-align: center;
- color: white;
- text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
+#puzzle_title {
+  font-size: larger;
+  position: absolute;
+  z-index: 99;
+  top: 25px;
+  left: 190px;
+  color: white;
+  text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
 }
 
-@keyframes animatezoom{
-from{top:0; left:0; transform:scale(0)}   
-to{top:25%; left:25%; transform:scale(1); }  
+@keyframes animatezoom {
+  from {
+    top: 0;
+    left: 0;
+    transform: scale(0)
+  }
+
+  to {
+    top: 25%;
+    left: 25%;
+    transform: scale(1);
+  }
 }
 
-.win{ 
-    position:absolute;
-    top:25%; 
-    left:25%;
-    width:210px;
-   z-index: 99;
-  
+.win {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 210px;
+  z-index: 99;
+
   animation-name: animatezoom;
   animation-duration: 4s;
 }
-    
-.win_vacuum{ 
-  width: 100px;
-  height: 100px;  
-}
-  
-.win_bond_vert{ 
-  width: 10px; 
-  height: 100px;
-  }
 
-.win_bond_horiz{
+.win_vacuum {
+  width: 100px;
+  height: 100px;
+}
+
+.win_bond_vert {
+  width: 10px;
+  height: 100px;
+}
+
+.win_bond_horiz {
   width: 100px;
   height: 10px;
-  }
-  
-.win_hyperspace{
-  text-align: center;  
-  width: 10px;  
-  height: 10px;   
-  }
- 
+}
+
+.win_hyperspace {
+  text-align: center;
+  width: 10px;
+  height: 10px;
+}
+
 
 td {
-  position:relative;
+  position: relative;
   margin: 0px;
-  padding: 0px;  
+  padding: 0px;
   -border: solid;
-  -border-width:1px;
-  -overflow:visible;
-} 
+  -border-width: 1px;
+  -overflow: visible;
+}
 
-svg{
-  position:absolute;
+svg {
+  position: absolute;
   top: 0px;
   left: 0px;
   display: block;
-  overflow:visible;
+  overflow: visible;
 }
 
-.vacuum{ 
+.vacuum {
   width: 50px;
-  height: 50px;  
-}
-  
-.bond_vert{ 
-  width: 5px; 
   height: 50px;
-  }
+}
 
-.bond_horiz{
+.bond_vert {
+  width: 5px;
+  height: 50px;
+}
+
+.bond_horiz {
   width: 50px;
   height: 5px;
-  }
-  
-.hyperspace{
-  text-align: center;  
-  width: 5px;  
-  height: 5px;   
-  }
-   
+}
 
-.wall{
+.hyperspace {
+  text-align: center;
+  width: 5px;
+  height: 5px;
+}
+
+
+.wall {
   background-color: CornflowerBlue;
 }
 
-.move_to{ 
+.move_to {
   border: dashed;
-  border-width:1px;
+  border-width: 1px;
 }
 
-
-
-
-
-
-
-</script>
+  
+  
+  
+  
+  
+  
+  
+  
+  </script>
 
 <script id="jsbin-source-javascript" type="text/javascript">//global vars ----------------------
 var error_msg = '';
@@ -2377,4 +2389,5 @@ window.addEventListener("keydown", function(e) {
 
 
 </script></body>
+
 </html>
