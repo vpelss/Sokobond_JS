@@ -7,7 +7,15 @@
 
   <meta charset="UTF-8">
   
- <title>Chemical Zen - Sokobond in JS</title>
+<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+
+
+  <title>CodePen - Chemical Zen - Sokobond in JS</title>
   
   
   
@@ -178,17 +186,17 @@ svg {
   </div>
 
   <p></p>
-  Build Your Own Puzzle:
+  Build Your Own Puzzle (in ASCII):
   <br>
   <textarea id="input_area" rows="4" cols="50"></textarea>
 
   <form action="#">
     <input type="button" value="Build This Puzzle" onclick='board_mode="game";Build_Puzzle(document.getElementById("input_area").value);'>
     <input type="button" value="How to build a puzzle in ASCII" onclick='alert(building_a_puzzle);'>
-    <p>Puzzle Editor Board</p>
+    <p>Puzzle Editor Board (GUI)</p>
     <input type="button" value="Puzzle Editor Board" onclick='Editor();'>
     <input type="button" value="ASCII to Editor Board" onclick='ASCII_To_Editor_Board();'>
-    <input type="button" value="Crop Editor Board" onclick='Crop_Editor_Board();'>  
+    <input type="button" value="Crop Editor Board" onclick='Crop_Editor_Board();'>
     <input type="button" value="Reset Editor Board" onclick='Reset_Editor();'>
   </form>
   <p></p>
@@ -197,56 +205,59 @@ svg {
   </form>
 
   <p>
-    Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
-  </p>
-  <p>
-    By <a href='https://www.emogic.com' target='_blank'>Emogic</a>
-  </p>
+    The original game: <a href='https://www.sokobond.com/' target='_blank'>https://www.sokobond.com/</a>. Highly recommended.
 
-  <audio autoplay controls>
-    <source src="http://emogic.com/Sokobond_JS/Open to the Elements.mp3_" type="audio/mpeg">
-    <p>Your browser does not support the audio element.</p>
-  </audio>
+    <p>
+      Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
+    </p>
+    <p>
+      By <a href='https://www.emogic.com' target='_blank'>Emogic</a>
+    </p>
 
-  <div id='Item_Menu' style='display:none;'>
-    <a href='#' onclick='Place_Item("0");'>Empty</a>
-    <br>
+    <audio autoplay controls>
+      <source src="http://emogic.com/Sokobond_JS/Open to the Elements.mp3_" type="audio/mpeg">
+      <p>Your browser does not support the audio element.</p>
+    </audio>
 
-    <div id='Item_Menu_Bonds'>
-      <a href='#' onclick='Place_Item("1");'>Bond 1</a>
+    <div id='Item_Menu' style='display:none;'>
+      <a href='#' onclick='Place_Item("0");'>Empty</a>
       <br>
-      <a href='#' onclick='Place_Item("2");'>Bond 2</a>
-      <br>
-      <a href='#' onclick='Place_Item("3");'>Bond 3</a>
-      <br>
-      <a href='#' onclick='Place_Item("4");'>Bond 4</a>
-      <br>
-    </div>
 
-    <div id='Item_Menu_Atoms'>
-      <a href='#' onclick='Place_Item("W");'>Wall</a>
-      <br>
-      <a href='#' onclick='Place_Item("h");'>Atom He</a>
-      <br>
-      <a href='#' onclick='Place_Item("H");'>Atom H</a>
-      <br>
-      <a href='#' onclick='Place_Item("N");'>Atom N</a>
-      <br>
-      <a href='#' onclick='Place_Item("O");'>Atom O</a>
-      <br>
-      <a href='#' onclick='Place_Item("C");'>Atom C</a>
-      <br>
-      <a href='#' onclick='Make_Me();'>Make this Atom Me</a>
-      <br>
-    </div>
-    <div id='Item_Menu_Modifiers'>
-      <a href='#' onclick='Place_Item("-");'>Splitter</a>
-      <br>
-      <a href='#' onclick='Place_Item("+");'>Joiner</a>
-      <br>
-      <a href='#' onclick='Place_Item(".");'>Twister</a>
-      <br>
-      </div? </div>
+      <div id='Item_Menu_Bonds'>
+        <a href='#' onclick='Place_Item("1");'>Bond 1</a>
+        <br>
+        <a href='#' onclick='Place_Item("2");'>Bond 2</a>
+        <br>
+        <a href='#' onclick='Place_Item("3");'>Bond 3</a>
+        <br>
+        <a href='#' onclick='Place_Item("4");'>Bond 4</a>
+        <br>
+      </div>
+
+      <div id='Item_Menu_Atoms'>
+        <a href='#' onclick='Place_Item("W");'>Wall</a>
+        <br>
+        <a href='#' onclick='Place_Item("h");'>Atom He</a>
+        <br>
+        <a href='#' onclick='Place_Item("H");'>Atom H</a>
+        <br>
+        <a href='#' onclick='Place_Item("N");'>Atom N</a>
+        <br>
+        <a href='#' onclick='Place_Item("O");'>Atom O</a>
+        <br>
+        <a href='#' onclick='Place_Item("C");'>Atom C</a>
+        <br>
+        <a href='#' onclick='Make_Me();'>Make this Atom Me</a>
+        <br>
+      </div>
+      <div id='Item_Menu_Modifiers'>
+        <a href='#' onclick='Place_Item("-");'>Splitter</a>
+        <br>
+        <a href='#' onclick='Place_Item("+");'>Joiner</a>
+        <br>
+        <a href='#' onclick='Place_Item(".");'>Twister</a>
+        <br>
+        </div? </div>
 
 </body>
 
