@@ -6,7 +6,6 @@
 <head>
 
   <meta charset="UTF-8">
-  
 
   <title>Chemical Zen - Sokobond in JS</title>
   
@@ -184,9 +183,13 @@ svg {
   <textarea id="input_area" rows="4" cols="50"></textarea>
 
   <form action="#">
-    <input type="button" value="Build This Puzzle" onclick='Build_Puzzle(document.getElementById("input_area").value);'>
+    <input type="button" value="Build This Puzzle" onclick='board_mode="game";Build_Puzzle(document.getElementById("input_area").value);'>
     <input type="button" value="How to build a puzzle in ASCII" onclick='alert(building_a_puzzle);'>
-    <input type="button" value="Build a puzzle using editor" onclick='Editor();'>
+    <p>Puzzle Editor Board</p>
+    <input type="button" value="Puzzle Editor Board" onclick='Editor();'>
+    <input type="button" value="ASCII to Editor Board" onclick='ASCII_To_Editor_Board();'>
+    <input type="button" value="Crop Editor Board" onclick='Crop_Editor_Board();'>  
+    <input type="button" value="Reset Editor Board" onclick='Reset_Editor();'>
   </form>
   <p></p>
   <form action="#">
@@ -254,7 +257,7 @@ svg {
       <script id="rendered-js" >
 //global vars -----------------------
 var error_msg = "";
-var input_string;
+//var input_string;
 var empty_chars = ["0"];
 var atom_chars = ["H", "h", "O", "C", "N"];
 var wall_chars = ["W"];
@@ -286,13 +289,14 @@ var direction = {
 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
+var board_mode = 'game'; //or editor or 
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
 var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
 var touched = {}; //this allows us to easily determine if we have already processed an atom or bond. touched[x_y]=1;
 var selected_square = "0_0"; //used por editor menu trigger square identification
 
-//graphics area --------------------------
+//SVG graphics variables --------------------------
 
 var svg = {};
 
@@ -531,12 +535,12 @@ svg.win = `<table>
 </tr>
 <table>`;
 
-//msg vars -----------------------------
+//alert vars -----------------------------
 
 var how_to_play = `
 Chemical Zen needs no instruction...
 
-arrows: move : or click it dashed boxes
+arrows: move : or click dashed boxes
 r: reset
 z: undo
 
@@ -801,7 +805,7 @@ function Bond_Modifier(x, y, letter) {
   // . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to
 }
 
-//main routine--------------------------
+//main routine Key input --------------------------
 
 function Key_Input(keyCode) {
   if (document.activeElement === document.getElementById("input_area")) {
@@ -886,7 +890,7 @@ function Key_Input(keyCode) {
     } else {
       //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects
       sound_fail.play();
-      Set_Board(premove_board);
+      Restore_Object_Methods_From_JSON(premove_board);
     }
     Objects_To_Place_Pieces_On_HTML_Board();
     Save_State();
@@ -978,7 +982,7 @@ function Objects_To_Create_Empty_HTML_Board() {
     for (let x = 0; x <= width; x++) {
       var state = State(x, y);
       var x_y = X_Y_To_String(x, y);
-      if (board.mode === "editor") {
+      if (board_mode === "editor") {
         board_string =
           board_string +
           "<td id=" +
@@ -1063,7 +1067,7 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
 }
 
 function Undo_Buttons_On_Board() {
-  if (board.mode != "editor") {
+  if (board_mode != "editor") {
     //set up r and z for tablets. only add listeners once!
     element = document.getElementById("0_0");
     element.innerHTML = "<center>z</center>";
@@ -1079,6 +1083,8 @@ function Undo_Buttons_On_Board() {
     });
   }
 }
+
+//editor functions -------------------------
 
 function Place_Item_Menu(square_id) {
   //show menu
@@ -1114,12 +1120,12 @@ function Make_Me() {
   element.style.display = "none";
 
   let x_y = selected_square;
-  board.x_y_me_editor = x_y;
+  board.x_y_me = x_y;
   let [x, y] = String_To_X_Y(x_y);
   board.x_me = x;
   board.y_me = y;
   Objects_To_Place_Pieces_On_HTML_Board(); //need to redraw to update svg
-  Editor_Board_To_ASCII();
+  document.getElementById("input_area").value = Editor_Board_To_ASCII();
 }
 
 function Place_Item(letter) {
@@ -1147,15 +1153,27 @@ function Place_Item(letter) {
   let element = document.getElementById("Item_Menu");
   element.style.display = "none";
 
-  Editor_Board_To_ASCII();
-
+  document.getElementById("input_area").value = Editor_Board_To_ASCII();
   //Save editor state
   if (supports_html5_storage() == true) {
-    localStorage.editor_board = JSON.stringify(board);
+    //localStorage.editor_board = JSON.stringify(board);
+    localStorage.editor_ascii_text =  document.getElementById("input_area").value;
   }
 }
 
-function Editor_Board_To_ASCII() {
+function Editor_Board_To_ASCII(){
+   //convert to ascii
+  let ascii_string = board.x_y_me.trim() + "\r\n";
+  for (let y = 0; y <= board.height; y++) {
+    for (let x = 0; x <= board.width; x++) {
+      ascii_string = ascii_string + board[x + "_" + y].letter;
+    }
+    ascii_string = ascii_string + "\r\n";
+  }  
+  return ascii_string;
+}
+
+function Crop_Editor_Board() {
   //build ascii and put in input_box
   let left_wall = 0;
   let x_size = board.width;
@@ -1221,24 +1239,26 @@ function Editor_Board_To_ASCII() {
   }
   bottom_wall = y;
   //convert x_y_me_editor to x_y_me based on top_wall and left_wall
-  [x, y] = String_To_X_Y(board.x_y_me_editor);
+  [x, y] = String_To_X_Y(board.x_y_me);
   board.x_y_me = x - left_wall + "_" + (y - top_wall);
-
-  //convert to ascii
+   //convert to ascii
   let ascii_string = board.x_y_me.trim() + "\r\n";
   for (y = top_wall; y <= bottom_wall; y++) {
     for (x = left_wall; x <= right_wall; x++) {
       ascii_string = ascii_string + board[x + "_" + y].letter;
     }
     ascii_string = ascii_string + "\r\n";
-  }
+  }  
+  
   //save to input_box
   document.getElementById("input_area").value = ascii_string;
+  Build_Puzzle(ascii_string);
+  //return ascii_string;
 }
 
 function Build_Puzzle(input_string) {
   //build display board and board objects
-  document.getElementById("Game_Time").style.display = "block";
+  if(board_mode === 'game'){document.getElementById("Game_Time").style.display = "block";}
   ASCII_To_Objects(input_string);
   Objects_To_Create_Empty_HTML_Board();
   Objects_To_Place_Pieces_On_HTML_Board();
@@ -1300,9 +1320,11 @@ function X_Y_To_String(x, y) {
   return x.toString() + "_" + y.toString();
 }
 
-function String_To_X_Y(x_y) {
-  //returns [x,y] int
-  var x, y;
+function String_To_X_Y(x_y) { //returns [x,y] int  
+   if (typeof x_y === "undefined") {
+     return [0,0];
+   } 
+  let x, y;
   [x, y] = x_y.split("_");
   return [parseInt(x), parseInt(y)];
 }
@@ -1529,15 +1551,29 @@ W0W0W0W0W0W0W0W
 `;
 
 function Game() {
+  board_mode = 'game';
   document.getElementById("Game_Time").style.display = "block";
   if (Restore_State() == false) {
     Load_Puzzle("aye");
   }
-  board.mode = "game";
+  board_mode = "game";
 }
 
 function Editor() {
+  board_mode = "editor";
   document.getElementById("Game_Time").style.display = "none";
+  let ascii_text;
+  if (typeof localStorage.editor_ascii_text === "undefined") { // no stored editor
+    ascii_text = Blank_Editor_ASCII();
+  }
+  else{ //stored editor
+    ascii_text = localStorage.editor_ascii_text;
+  }
+  document.getElementById("input_area").value = ascii_text;
+  Build_Puzzle(ascii_text);
+}
+
+function Blank_Editor_ASCII(){
   let x_squares = 10;
   let y_squares = 10;
   let x_size = x_squares * 2 - 2;
@@ -1549,26 +1585,26 @@ function Editor() {
     for (let x = 0; x <= x_size; x++) {
       ascii_text = ascii_text + "0";
     }
-  }
-  ASCII_To_Objects(ascii_text);
-  board.mode = "editor";
-  //board.x_y_me_editor = '0_0';
-  //board.x_y_me = '2_2';
-  //board.width = x_size;
-  //board.height = y_size;
-  Objects_To_Create_Empty_HTML_Board();
-  //saved editor?
-  //var editor_board = '';
-  if (typeof localStorage.editor_board !== "undefined") {
-    //editor_board = JSON.parse(localStorage.editor_board);
-    Restore_Object_Methods_From_JSON(localStorage.editor_board);
-  }
+  }  
+  return ascii_text;
+}
 
-  Objects_To_Place_Pieces_On_HTML_Board();
+function Reset_Editor(){
+  localStorage.editor_ascii_text = Blank_Editor_ASCII();
+  Editor();
+  
+  //document.getElementById("input_area").value = 
+  //Build_Puzzle(Blank_Editor_ASCII());  
+  //document.getElementById("input_area").value = Editor_Board_To_ASCII();
+  //localStorage.editor_ascii_text =   document.getElementById("input_area").value;
+}
 
-  //save to input_box
-  Editor_Board_To_ASCII();
+function ASCII_To_Editor_Board(){
+  localStorage.editor_ascii_text = document.getElementById("input_area").value ;
+  Editor();
+  //board_mode = 'editor';
   //document.getElementById("input_area").value = ascii_text;
+  //Build_Puzzle(ascii_text); 
 }
 
 //free roaming code ----------------------------
