@@ -7,15 +7,7 @@
 
   <meta charset="UTF-8">
   
-<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
-<meta name="apple-mobile-web-app-title" content="CodePen">
-
-<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
-
-<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
-
-
-  <title>CodePen - Chemical Zen - Sokobond in JS</title>
+  <title>Chemical Zen - Sokobond in JS</title>
   
   
   
@@ -30,7 +22,7 @@ table {
 
 #puzzle_title {
   font-size: larger;
-  position: absolute;
+  -position: absolute;
   z-index: 99;
   top: 25px;
   left: 190px;
@@ -165,6 +157,9 @@ svg {
 //to do ---------------------------------------
 //scalable board - must use js selectall OR have a scroll mode!
 -->
+      The original game: <a href='https://www.sokobond.com/' target='_blank'>https://www.sokobond.com/</a>. Highly recommended.
+  <br>
+  
   <div id='win'></div>
   <div id=board></div>
 
@@ -203,10 +198,7 @@ svg {
   <form action="#">
     Something not right?: <input type="button" value="Factory Reset" onclick='Factory_Reset();'>
   </form>
-
-  <p>
-    The original game: <a href='https://www.sokobond.com/' target='_blank'>https://www.sokobond.com/</a>. Highly recommended.
-
+  
     <p>
       Source code is at: <a href='https://github.com/vpelss/Sokobond_JS' target='_blank'>https://github.com/vpelss/Sokobond_JS</a>
     </p>
@@ -305,10 +297,9 @@ var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we c
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
 var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
 var touched = {}; //this allows us to easily determine if we have already processed an atom or bond. touched[x_y]=1;
-var selected_square = "0_0"; //used por editor menu trigger square identification
+var selected_square = "0_0"; //used for editor menu trigger square identification
 
 //SVG graphics variables --------------------------
-
 var svg = {};
 
 svg["-"] = `<svg width="100%" height="100%"  viewBox="0 0 5 5">
@@ -547,7 +538,6 @@ svg.win = `<table>
 <table>`;
 
 //alert vars -----------------------------
-
 var how_to_play = `
 Chemical Zen needs no instruction...
 
@@ -574,6 +564,83 @@ C = carbon -It has 4 free valence bonds. It must be in locations where x and y a
 + = bond adder -bonds crossing this will increase by 1 if the atoms have free valences
 - = bond subtractor -bonds crossing this will decrease by 1
 . = bond twister - bonds crossing this will wrap around it `;
+
+//puzzle vars ------------------------
+var puzzles = {};
+puzzles.aye = `8_8
+W0W0W0W0W0W0W0W0W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+0000W0O0h0O0W0000
+00000000000000000
+W0W0W0000000W0W0W
+00000000000000000
+W00000H000H00000W
+00000000000000000
+W000h000h000h000W
+00000000000000000
+W0W0W0W0W0W0W0W0W
+`;
+
+puzzles.suit = `4_2
+W0W0W0W0W0W0W
+0000000000000
+W000H000O000W
+0000000000000
+W00000W00000W
+0000000000000
+W00000000000W
+0000000000000
+W00000W00000W
+0000000000000
+W000H000O000W
+0000000000000
+W0W0000000W0W
+0000000000000
+00W0W0W0W0W00`;
+
+puzzles.pendant = `6_8
+0000W0W0W0000
+0000000000000
+W0W0W000W0W0W
+00000.0.00000
+W00000000000W
+000.0-0-0.000
+W0H0W000W0H0W
+0000000000000
+W000W0C0W000W
+0000000000000
+W0H0W000W0H0W
+000.0-0-0.000
+W00000000000W
+00000-0-00000
+W0W0W000W0W0W
+0000000000000
+0000W0W0W0000
+`;
+
+puzzles.construction = `2_2
+W0W0W0W0W0W0W0W
+000000000000000
+W0H000000000H0W
+000.0.0.0.0.000
+W000O000000000W
+000.0.0.0.0.000
+W0000000000000W
+000.0.0-0.0.000
+W0000000000000W
+000.0.0.0.0.000
+W000000000C000W
+000.0.0.0.0.000
+W0H000000000H0W
+000000000000000
+W0W0W0W0W0W0W0W
+`;
 
 //constructors ------------------------
 
@@ -816,114 +883,115 @@ function Bond_Modifier(x, y, letter) {
   // . if a bond hits it, the force transmitted by the bond will change to pull the receiving atom in the direction of the transmitting atom, the bond will move to
 }
 
-//main routine Key input --------------------------
-
-function Key_Input(keyCode) {
-  if (document.activeElement === document.getElementById("input_area")) {
-    return;
-  }
-
-  //esc : 27
-
-  if (keyCode == 82) {
-    //r 82
-    while (previous_board.length > 0) {
-      Restore_Object_Methods_From_JSON(previous_board.pop());
-      Objects_To_Place_Pieces_On_HTML_Board();
-    }
-    return;
-  }
-
-  if (keyCode == 90) {
-    //z:undo
-    if (previous_board.length > 0) {
-      Restore_Object_Methods_From_JSON(previous_board.pop());
-      Objects_To_Place_Pieces_On_HTML_Board();
-      return; //do not hit move routine
-    }
-  }
-
-  let move_key_pressed = false;
-  let NEWS;
-  if (keyCode == 37) {
-    //left
-    NEWS = "W";
-    move_key_pressed = true;
-  }
-
-  if (keyCode == 38) {
-    //up
-    NEWS = "N";
-    move_key_pressed = true;
-  }
-
-  if (keyCode == 39) {
-    //right
-    NEWS = "E";
-    move_key_pressed = true;
-  }
-
-  if (keyCode == 40) {
-    //down
-    NEWS = "S";
-    move_key_pressed = true;
-  }
-
-  if (move_key_pressed) {
-    //clear and get ready for another move
-    move = {};
-    atom_intended_move = {};
-    touched = {};
-
-    let premove_board = JSON.stringify(board); //so we can perfectly reset board on failed move
-
-    if (board[board.x_me + "_" + board.y_me].Can_I_Move(NEWS)) {
-      //save old board state
-      previous_board.push(JSON.stringify(board)); //for z - undo
-      //all moves are in move[x_y] = 'x_y_new'
-      //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
-      //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
-      let temp = {};
-      let key;
-      for (key in move) {
-        //save temp reference for all moving board objects. then remove the board references (set to empty)
-        temp[key] = board[key];
-        board[key] = new Empty(String_To_X_Y(key));
-      }
-      for (key in move) {
-        //now set all moved board references
-        board[move[key]] = temp[key];
-      }
-      //move me
-      board.x_y_me = move[board.x_me + "_" + board.y_me];
-      [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
-      Join_Free_Atoms(); //for every atom, check for atoms that can bond
-    } else {
-      //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects
-      sound_fail.play();
-      Restore_Object_Methods_From_JSON(premove_board);
-    }
-    Objects_To_Place_Pieces_On_HTML_Board();
-    Save_State();
-    Check_For_Win();
-  }
-}
-
 //board functions -----------------
-
-function Prep_New_Game() {
-  board = {};
-  board.x_me = 0;
-  board.y_me = 0;
-  board.width = 0;
-  board.height = 0;
-  move = {};
-  atom_intended_move = {};
-  previous_board = [];
-  touched = {};
-  error_msg = "";
+function Objects_To_Create_Empty_HTML_Board() {
+  let width = board.width;
+  let height = board.height;
+  let board_string = '<div id="puzzle_title">title</div>';
+  board_string = board_string + '<table id="board_table">';
+  for (let y = 0; y <= height; y++) {
+    board_string = board_string + "<tr>";
+    for (let x = 0; x <= width; x++) {
+      var state = State(x, y);
+      var x_y = X_Y_To_String(x, y);
+      if (board_mode === "editor") {
+        board_string =
+          board_string +
+          "<td id=" +
+          x_y +
+          ' class="' +
+          state +
+          ' editor" onmousedown="Place_Item_Menu(this.id);"></td>';
+      } else {
+        //z and r button cases
+        if(x_y === '0_0'){//z 
+          board_string = board_string + "<td id=" + x_y + ' class="move_to ' + state + '" onmousedown="Key_Input(90);"><center>z</center></td>'; }
+        else if(x_y === '2_0'){//r 
+          board_string = board_string + "<td id=" + x_y + ' class="move_to ' + state + '" onmousedown="Key_Input(82);"><center>r</center></td>'; }
+        else{ //everything else 
+          board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onmousedown="Mouse_Down(this.id);"></td>'; }
+      }
+    }
+    board_string = board_string + "</tr>";
+  }
+  board_string = board_string + "</table>";
+  document.getElementById("board").innerHTML = board_string;
 }
 
+function Objects_To_Place_Pieces_On_HTML_Board() {
+  let element = document.getElementById("puzzle_title");
+  element.innerHTML = board.title;
+  for (let y = 0; y <= board.height; y++) {
+    for (let x = 0; x <= board.width; x++) {
+      let x_y = X_Y_To_String(x, y);
+      if (typeof board[x_y] === "undefined") {
+        continue;
+      } //nothing here
+      let letter = board[x_y].letter;
+      element = document.getElementById(x_y);       
+      if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
+        element.classList.remove("move_to"); //reset possible move classes
+      }
+      //highlight possible moves
+      let news = Get_NEWS(board.x_me, board.y_me);
+      if (news.N.x_y_full_step === x_y) {
+        element.classList.add("move_to");
+      }
+      if (news.E.x_y_full_step === x_y) {
+        element.classList.add("move_to");
+      }
+      if (news.W.x_y_full_step === x_y) {
+        element.classList.add("move_to");
+      }
+      if (news.S.x_y_full_step === x_y) {
+        element.classList.add("move_to");
+      }
+
+      if (board[x_y].is_a === "empty") {
+        if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
+        element.innerHTML = "<div class=content></div>";
+      }
+        element.classList.remove("me");
+        element.classList.remove("wall");
+        element.classList.remove("atom");
+      }
+      if (board[x_y].is_a === "wall") {
+        if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
+        element.innerHTML = "<div class=content></div>";
+      }      
+        element.classList.add("wall");
+      }
+      if (board[x_y].is_a === "atom") {
+        let temp = svg[letter]; //atom text and color
+        if (x === board.x_me && y === board.y_me) {
+          temp = temp + svg.dash_circle; //dashed circle
+          element.classList.add("me");
+        } else {
+          temp = temp + svg.solid_circle; //normal circle
+        }
+        temp = temp + svg["" + "valence_" + board[x_y].Return_Free_Valence()]; //get valance
+        element.innerHTML = temp;
+      }
+      if (board[x_y].is_a === "bond") {
+        let state = State(x, y); //can't use className as it might have trailing editor
+        element.innerHTML = svg["" + state + "_" + board[x_y].value];
+      }
+      if (board[x_y].is_a === "bond_modifier") {
+        element.innerHTML = svg[letter];
+      }
+    }
+  }
+}
+
+function Build_Puzzle(input_string) {
+  //build display board and board objects
+  if(board_mode === 'game'){document.getElementById("Game_Time").style.display = "block";}
+  ASCII_To_Objects(input_string);
+  Objects_To_Create_Empty_HTML_Board();
+  Objects_To_Place_Pieces_On_HTML_Board();
+}
+
+//object  functions
 function ASCII_To_Objects(ascii_string) {
   Prep_New_Game();
   ascii_string = ascii_string.trim();
@@ -983,119 +1051,54 @@ function ASCII_To_Objects(ascii_string) {
   Join_Free_Atoms();
 }
 
-function Objects_To_Create_Empty_HTML_Board() {
-  let width = board.width;
-  let height = board.height;
-  let board_string = '<div id="puzzle_title">title</div>';
-  board_string = board_string + '<table id="board_table">';
-  for (let y = 0; y <= height; y++) {
-    board_string = board_string + "<tr>";
-    for (let x = 0; x <= width; x++) {
-      var state = State(x, y);
-      var x_y = X_Y_To_String(x, y);
-      if (board_mode === "editor") {
-        board_string =
-          board_string +
-          "<td id=" +
-          x_y +
-          ' class="' +
-          state +
-          ' editor" onmousedown="Place_Item_Menu(this.id);"></td>';
-      } else {
-        board_string =
-          board_string +
-          "<td id=" +
-          x_y +
-          ' class="' +
-          state +
-          '" onmousedown="Mouse_Down(this.id);"></td>';
-      }
+//as we can only easily save objects as json, and json strips the methods, we need this routine to add the methods to the json objects
+function Restore_Object_Methods_From_JSON(json_string) {
+  // was Set_Board
+  board = JSON.parse(json_string);
+  for (let key in board) {
+    let x, y;
+    [x, y] = String_To_X_Y(key);
+    if (board[key].is_a === "wall") {
+      board[key] = new Wall(x, y, board[key].letter);
     }
-    board_string = board_string + "</tr>";
-  }
-  board_string = board_string + "</table>";
-  document.getElementById("board").innerHTML = board_string;
-}
-
-function Objects_To_Place_Pieces_On_HTML_Board() {
-  let element = document.getElementById("puzzle_title");
-  element.innerHTML = board.title;
-  for (let y = 0; y <= board.height; y++) {
-    for (let x = 0; x <= board.width; x++) {
-      let x_y = X_Y_To_String(x, y);
-      if (typeof board[x_y] === "undefined") {
-        continue;
-      } //nothing here
-      let letter = board[x_y].letter;
-      element = document.getElementById(x_y);
-      element.classList.remove("move_to"); //reset possible move classes
-      //highlight possible moves
-      let news = Get_NEWS(board.x_me, board.y_me);
-      if (news.N.x_y_full_step === x_y) {
-        element.classList.add("move_to");
-      }
-      if (news.E.x_y_full_step === x_y) {
-        element.classList.add("move_to");
-      }
-      if (news.W.x_y_full_step === x_y) {
-        element.classList.add("move_to");
-      }
-      if (news.S.x_y_full_step === x_y) {
-        element.classList.add("move_to");
-      }
-
-      if (board[x_y].is_a === "empty") {
-        element.innerHTML = "<div class=content></div>";
-        element.classList.remove("me");
-        element.classList.remove("wall");
-        element.classList.remove("atom");
-      }
-      if (board[x_y].is_a === "wall") {
-        element.innerHTML = "<div class=content></div>";
-        element.classList.add("wall");
-      }
-      if (board[x_y].is_a === "atom") {
-        let temp = svg[letter]; //atom text and color
-        if (x === board.x_me && y === board.y_me) {
-          temp = temp + svg.dash_circle; //dashed circle
-          element.classList.add("me");
-        } else {
-          temp = temp + svg.solid_circle; //normal circle
-        }
-        temp = temp + svg["" + "valence_" + board[x_y].Return_Free_Valence()]; //get valance
-        element.innerHTML = temp;
-      }
-      if (board[x_y].is_a === "bond") {
-        let state = State(x, y); //can't use className as it might have trailing editor
-        element.innerHTML = svg["" + state + "_" + board[x_y].value];
-      }
-      if (board[x_y].is_a === "bond_modifier") {
-        element.innerHTML = svg[letter];
-      }
+    if (board[key].is_a === "empty") {
+      board[key] = new Empty(x, y, board[key].letter);
     }
-  }
-  Undo_Buttons_On_Board();
-}
-
-function Undo_Buttons_On_Board() {
-  if (board_mode != "editor") {
-    //set up r and z for tablets. only add listeners once!
-    element = document.getElementById("0_0");
-    element.innerHTML = "<center>z</center>";
-    element.classList.add("move_to");
-    element.addEventListener("mousedown", function () {
-      Key_Input(90);
-    });
-    element = document.getElementById("2_0");
-    element.innerHTML = "<center>r</center>";
-    element.classList.add("move_to");
-    element.addEventListener("click", function () {
-      Key_Input(82);
-    });
+    if (board[key].is_a === "bond") {
+      board[key] = new Bond(x, y, board[key].value);
+    }
+    if (board[key].is_a === "atom") {
+      board[key] = new Atom(x, y, board[key].letter);
+    }
   }
 }
 
 //editor functions -------------------------
+function Blank_Editor_ASCII(){
+  let x_squares = 10;
+  let y_squares = 10;
+  let x_size = x_squares * 2 - 2;
+  let y_size = y_squares * 2 - 2;
+  let ascii_text = "2_2";
+  //build a blank x by y ascii. easy way to make clear board!
+  for (let y = 0; y <= y_size; y++) {
+    ascii_text = ascii_text + "\r\n";
+    for (let x = 0; x <= x_size; x++) {
+      ascii_text = ascii_text + "0";
+    }
+  }  
+  return ascii_text;
+}
+
+function Reset_Editor(){
+  localStorage.editor_ascii_text = Blank_Editor_ASCII();
+  Editor();
+}
+
+function ASCII_To_Editor_Board(){
+  localStorage.editor_ascii_text = document.getElementById("input_area").value ;
+  Editor();
+}
 
 function Place_Item_Menu(square_id) {
   //show menu
@@ -1267,37 +1270,19 @@ function Crop_Editor_Board() {
   //return ascii_string;
 }
 
-function Build_Puzzle(input_string) {
-  //build display board and board objects
-  if(board_mode === 'game'){document.getElementById("Game_Time").style.display = "block";}
-  ASCII_To_Objects(input_string);
-  Objects_To_Create_Empty_HTML_Board();
-  Objects_To_Place_Pieces_On_HTML_Board();
-}
-
-//as we can only easily save objects as json, and json strips the methods, we need this routine to restore the json & add the methods from the objects
-function Restore_Object_Methods_From_JSON(json_string) {
-  // was Set_Board
-  board = JSON.parse(json_string);
-  for (let key in board) {
-    let x, y;
-    [x, y] = String_To_X_Y(key);
-    if (board[key].is_a === "wall") {
-      board[key] = new Wall(x, y, board[key].letter);
-    }
-    if (board[key].is_a === "empty") {
-      board[key] = new Empty(x, y, board[key].letter);
-    }
-    if (board[key].is_a === "bond") {
-      board[key] = new Bond(x, y, board[key].value);
-    }
-    if (board[key].is_a === "atom") {
-      board[key] = new Atom(x, y, board[key].letter);
-    }
-  }
-}
-
 //general functions -------------------------
+function Prep_New_Game() {
+  board = {};
+  board.x_me = 0;
+  board.y_me = 0;
+  board.width = 0;
+  board.height = 0;
+  move = {};
+  atom_intended_move = {};
+  previous_board = [];
+  touched = {};
+  error_msg = "";
+}
 
 function Join_Free_Atoms() {
   for (let key in board) {
@@ -1379,44 +1364,6 @@ function State(x, y) {
   }
 }
 
-function Restore_State() {
-  if (supports_html5_storage() == false) {
-    return false;
-  }
-  if (typeof localStorage.board === "undefined") {
-    return false;
-  } //nothing to restore. use var
-  //order or restoration is very important here
-  if (typeof localStorage.board === "undefined") {
-    return false;
-  } //nothing to restore. use var
-  document.getElementById("input_area").value = localStorage.input_area;
-  Build_Puzzle(document.getElementById("input_area").value);
-  Restore_Object_Methods_From_JSON(localStorage.board);
-  Join_Free_Atoms();
-  Objects_To_Place_Pieces_On_HTML_Board();
-  previous_board = JSON.parse(localStorage.previous_board);
-  return true;
-}
-
-function Save_State() {
-  if (supports_html5_storage() == false) {
-    return;
-  }
-
-  localStorage.board = JSON.stringify(board);
-  localStorage.previous_board = JSON.stringify(previous_board);
-  localStorage.input_area = document.getElementById("input_area").value;
-}
-
-function supports_html5_storage() {
-  try {
-    return "localStorage" in window && window.localStorage !== null;
-  } catch (e) {
-    return false;
-  }
-}
-
 //https://www.w3schools.com/graphics/game_sound.asp
 function sound(src) {
   this.sound = document.createElement("audio");
@@ -1463,104 +1410,7 @@ function Mouse_Down(x_y) {
   }
 }
 
-function Load_Puzzle(puzzle) {
-  let element = document.getElementById("win");
-  element.classList.remove("win");
-  element.innerHTML = "";
-  Build_Puzzle(puzzles[puzzle]);
-  board.title = puzzle;
-  document.getElementById("input_area").value = puzzles[puzzle];
-  Join_Free_Atoms();
-  Objects_To_Place_Pieces_On_HTML_Board();
-  Save_State();
-}
-
-function Factory_Reset() {
-  delete localStorage.board;
-  delete localStorage.editor_board;
-  delete localStorage.input_area;
-  delete localStorage.previous_board;
-  Game();
-}
-
-//puzzle vars ------------------------
-
-var puzzles = {};
-puzzles.aye = `8_8
-W0W0W0W0W0W0W0W0W
-00000000000000000
-W000h000h000h000W
-00000000000000000
-W00000H000H00000W
-00000000000000000
-W0W0W0000000W0W0W
-00000000000000000
-0000W0O0h0O0W0000
-00000000000000000
-W0W0W0000000W0W0W
-00000000000000000
-W00000H000H00000W
-00000000000000000
-W000h000h000h000W
-00000000000000000
-W0W0W0W0W0W0W0W0W
-`;
-
-puzzles.suit = `4_2
-W0W0W0W0W0W0W
-0000000000000
-W000H000O000W
-0000000000000
-W00000W00000W
-0000000000000
-W00000000000W
-0000000000000
-W00000W00000W
-0000000000000
-W000H000O000W
-0000000000000
-W0W0000000W0W
-0000000000000
-00W0W0W0W0W00`;
-
-puzzles.pendant = `6_8
-0000W0W0W0000
-0000000000000
-W0W0W000W0W0W
-00000.0.00000
-W00000000000W
-000.0-0-0.000
-W0H0W000W0H0W
-0000000000000
-W000W0C0W000W
-0000000000000
-W0H0W000W0H0W
-000.0-0-0.000
-W00000000000W
-00000-0-00000
-W0W0W000W0W0W
-0000000000000
-0000W0W0W0000
-`;
-
-puzzles.construction = `2_2
-W0W0W0W0W0W0W0W
-000000000000000
-W0H000000000H0W
-000.0.0.0.0.000
-W000O000000000W
-000.0.0.0.0.000
-W0000000000000W
-000.0.0-0.0.000
-W0000000000000W
-000.0.0.0.0.000
-W000000000C000W
-000.0.0.0.0.000
-W0H000000000H0W
-000000000000000
-W0W0W0W0W0W0W0W
-`;
-
+//main start up routines 
 function Game() {
   board_mode = 'game';
   document.getElementById("Game_Time").style.display = "block";
@@ -1584,38 +1434,147 @@ function Editor() {
   Build_Puzzle(ascii_text);
 }
 
-function Blank_Editor_ASCII(){
-  let x_squares = 10;
-  let y_squares = 10;
-  let x_size = x_squares * 2 - 2;
-  let y_size = y_squares * 2 - 2;
-  let ascii_text = "2_2";
-  //build a blank x by y ascii. easy way to make clear board!
-  for (let y = 0; y <= y_size; y++) {
-    ascii_text = ascii_text + "\r\n";
-    for (let x = 0; x <= x_size; x++) {
-      ascii_text = ascii_text + "0";
+//main routine Key input --------------------------
+
+function Key_Input(keyCode) {
+  if (document.activeElement === document.getElementById("input_area")) {
+    return;
+  }
+  if (keyCode == 82) {
+    //r 82
+    while (previous_board.length > 0) {
+      Restore_Object_Methods_From_JSON(previous_board.pop());
+      Objects_To_Place_Pieces_On_HTML_Board();
     }
-  }  
-  return ascii_text;
+    return;
+  }
+  if (keyCode == 90) {
+    //z:undo
+    if (previous_board.length > 0) {
+      Restore_Object_Methods_From_JSON(previous_board.pop());
+      Objects_To_Place_Pieces_On_HTML_Board();
+      return; //do not hit move routine
+    }
+  }
+  let move_key_pressed = false;
+  let NEWS;
+  if (keyCode == 37) {
+    //left
+    NEWS = "W";
+    move_key_pressed = true;
+  }
+  if (keyCode == 38) {
+    //up
+    NEWS = "N";
+    move_key_pressed = true;
+  }
+  if (keyCode == 39) {
+    //right
+    NEWS = "E";
+    move_key_pressed = true;
+  }
+  if (keyCode == 40) {
+    //down
+    NEWS = "S";
+    move_key_pressed = true;
+  }
+  if (move_key_pressed) {
+    //clear and get ready for another move
+    move = {};
+    atom_intended_move = {};
+    touched = {};
+
+    let premove_board = JSON.stringify(board); //so we can perfectly reset board on failed move
+
+    if (board[board.x_me + "_" + board.y_me].Can_I_Move(NEWS)) {
+      //save old board state
+      previous_board.push(JSON.stringify(board)); //for z - undo
+      //all moves are in move[x_y] = 'x_y_new'
+      //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
+      //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
+      let temp = {};
+      let key;
+      for (key in move) {
+        //save temp reference for all moving board objects. then remove the board references (set to empty)
+        temp[key] = board[key];
+        board[key] = new Empty(String_To_X_Y(key));
+      }
+      for (key in move) {
+        //now set all moved board references
+        board[move[key]] = temp[key];
+      }
+      //move me
+      board.x_y_me = move[board.x_me + "_" + board.y_me];
+      [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
+      Join_Free_Atoms(); //for every atom, check for atoms that can bond
+    } else {
+      //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects
+      sound_fail.play();
+      Restore_Object_Methods_From_JSON(premove_board);
+    }
+    Objects_To_Place_Pieces_On_HTML_Board();
+    Save_State();
+    Check_For_Win();
+  }
 }
 
-function Reset_Editor(){
-  localStorage.editor_ascii_text = Blank_Editor_ASCII();
-  Editor();
-  
-  //document.getElementById("input_area").value = 
-  //Build_Puzzle(Blank_Editor_ASCII());  
-  //document.getElementById("input_area").value = Editor_Board_To_ASCII();
-  //localStorage.editor_ascii_text =   document.getElementById("input_area").value;
+//load and save routines
+function Restore_State() {
+  if (supports_html5_storage() == false) {
+    return false;
+  }
+  if (typeof localStorage.board === "undefined") {
+    return false;
+  } //nothing to restore. use var
+  //order or restoration is very important here
+  if (typeof localStorage.board === "undefined") {
+    return false;
+  } //nothing to restore. use var
+  document.getElementById("input_area").value = localStorage.input_area;
+  Build_Puzzle(document.getElementById("input_area").value);
+  Restore_Object_Methods_From_JSON(localStorage.board);
+  Join_Free_Atoms();
+  Objects_To_Place_Pieces_On_HTML_Board();
+  previous_board = JSON.parse(localStorage.previous_board);
+  return true;
 }
 
-function ASCII_To_Editor_Board(){
-  localStorage.editor_ascii_text = document.getElementById("input_area").value ;
-  Editor();
-  //board_mode = 'editor';
-  //document.getElementById("input_area").value = ascii_text;
-  //Build_Puzzle(ascii_text); 
+function Save_State() {
+  if (supports_html5_storage() == false) {
+    return;
+  }
+
+  localStorage.board = JSON.stringify(board);
+  localStorage.previous_board = JSON.stringify(previous_board);
+  localStorage.input_area = document.getElementById("input_area").value;
+}
+
+function supports_html5_storage() {
+  try {
+    return "localStorage" in window && window.localStorage !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
+function Load_Puzzle(puzzle) {
+  let element = document.getElementById("win");
+  element.classList.remove("win");
+  element.innerHTML = "";
+  Build_Puzzle(puzzles[puzzle]);
+  board.title = puzzle;
+  document.getElementById("input_area").value = puzzles[puzzle];
+  Join_Free_Atoms();
+  Objects_To_Place_Pieces_On_HTML_Board();
+  Save_State();
+}
+
+function Factory_Reset() {
+  delete localStorage.board;
+  delete localStorage.editor_board;
+  delete localStorage.input_area;
+  delete localStorage.previous_board;
+  Game();
 }
 
 //free roaming code ----------------------------
