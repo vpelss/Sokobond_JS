@@ -4,10 +4,15 @@
 <html lang="en" >
 
 <head>
-  <meta name="description" content="Chemical Zen - Sokobond in JS">
+
+  <meta charset="UTF-8">
+  
+ <meta name="description" content="Chemical Zen - Sokobond in JS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width" initial-scale="1.0">
   <title>Chemical Zen - Sokobond in JS</title>
+
+  
   
 <style>
 table {
@@ -54,6 +59,15 @@ table {
   left: 190px;
   color: white;
   text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
+}
+
+#Item_Menu {
+  border: solid;
+  border-width: 1px;
+}
+
+#input_area{
+font-family: "Courier New";
 }
 
 @keyframes animatezoom {
@@ -153,11 +167,6 @@ svg {
 
 .selected{
 background-color: yellow;  
-}
-
-#Item_Menu {
-  border: solid;
-  border-width: 1px;
 }
 
 /*https://www.w3schools.com/w3css/4/w3pro.css*/
@@ -330,46 +339,48 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 
 <body ONKEYUP="Key_Input(event.keyCode);">
 
-    <!-- https://www.w3schools.com/w3css/w3css_mobile.asp  -->
-    <nav class="w3-sidebar w3-bar-block w3-card w3-animate-top" id="mySidebar">
-      <div class="w3-container w3-theme-d2">
-        <span onclick="closeSidebar()" class="w3-button w3-display-topright w3-large">X</span>
-        <br>
-      </div>
-      <a class="w3-bar-item w3-button" href="https://www.sokobond.com/" onclick="closeSidebar();" target="_blank" rel="noopener">Original Sokobond</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(how_to_play);">How to play</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Load_Puzzle('aye');">Puzzle: Aye</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Load_Puzzle('suit');">Puzzle: Suit</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Load_Puzzle('pendant');">Puzzle: Pendant</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Load_Puzzle('construction');">Puzzle: Construction</a>
-      -----
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">Current puzzle to editor</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Puzzle editor</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor board</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Build_Puzzle(document.getElementById('input_area').value);">Build puzzle</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Reset_Editor();">Reset editor board</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">ASCII to editor board</a>
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a>
-      -----
-      <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();">Factory reset</a>
-    </nav>
+  <!-- https://www.w3schools.com/w3css/w3css_mobile.asp  -->
+  <nav class="w3-sidebar w3-bar-block w3-card w3-animate-top" id="mySidebar">
+    <div class="w3-container w3-theme-d2">
+      <span ontouchend="closeSidebar()" onclick="closeSidebar()" class="w3-button w3-display-topright w3-large">X</span>
+      <br>
+    </div>
+    --- Game ---
+    <a class="w3-bar-item w3-button" href="https://www.sokobond.com/" onclick="closeSidebar();" target="_blank" rel="noopener">Original Sokobond</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(how_to_play);">How to play</a>
+    Puzzle: <select name="puzzle_select" id="puzzle_select" onchange="closeSidebar();Load_Puzzle(this.value);this.selectedIndex=0;">
+      <option value="" disabled selected>---</option>
+    </select>
+    <br><br>
+    --- Editor ---
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Puzzle editor</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">Current puzzle to editor</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor board</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Build_Puzzle(document.getElementById('input_area').value);">Build puzzle</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Reset_Editor();">Reset editor board</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">ASCII to editor board</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a>
+    --- Problems? ---
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();">Factory reset</a>
 
-    <header class="w3-bar w3-card w3-theme">
-      <button class="w3-bar-item w3-button w3-large w3-hover-theme" onclick="openSidebar()">&#9776;</button>
-      <h7 class="w3-bar-item">Chemical Zen</h7>
-    </header>
+  </nav>
 
-    <script>
-      function openSidebar() {
-        document.getElementById("mySidebar").style.display = "block";
-      }
+  <header class="w3-bar w3-card w3-theme">
+    <button class="w3-bar-item w3-button w3-large w3-hover-theme" ontouchend="openSidebar()" onclick="openSidebar()">&#9776;</button>
+    <h7 class="w3-bar-item">Chemical Zen</h7>
+  </header>
 
-      function closeSidebar() {
-        document.getElementById("mySidebar").style.display = "none";
-      }
-      closeSidebar();
-    </script>
-  
+  <script>
+    function openSidebar() {
+      document.getElementById("mySidebar").style.display = "block";
+    }
+
+    function closeSidebar() {
+      document.getElementById("mySidebar").style.display = "none";
+    }
+    closeSidebar();
+  </script>
+
   <center>
     <div id="board"></div>
     <br>
@@ -434,7 +445,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   </div>
 
   <div id="win"></div>
-  
+
 </body>
 
 </html>
@@ -476,7 +487,7 @@ var direction = {
 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
-var board_mode = 'game'; //or editor or 
+var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
 var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
@@ -1072,10 +1083,10 @@ function Objects_To_Create_Empty_HTML_Board() {
   let width = board.width;
   let height = board.height;
   let board_string = '<div id="puzzle_title">title</div>';
-  //board_string = board_string + "<div id='left_arrow'> << </div>"; 
-  //board_string = board_string + "<div id='right_arrow'> >> </div>"; 
-  //board_string =​ board_string + "<div id='top_arrow'> || </div>"; 
-  //board_string = board_string + "<div id='bottom_arrow'> || </div>"; 
+  //board_string = board_string + "<div id='left_arrow'> << </div>";
+  //board_string = board_string + "<div id='right_arrow'> >> </div>";
+  //board_string =​ board_string + "<div id='top_arrow'> || </div>";
+  //board_string = board_string + "<div id='bottom_arrow'> || </div>";
   board_string = board_string + '<table id="board_table">';
   for (let y = 0; y <= height; y++) {
     board_string = board_string + "<tr>";
@@ -1092,16 +1103,38 @@ function Objects_To_Create_Empty_HTML_Board() {
           ' editor" onmousedown="Place_Item_Menu(this.id);"></td>';
       } else {
         //z and r button cases
-        if(x_y === '0_0'){//z 
-          board_string = board_string + "<td id=" + x_y + ' class="move_to ' + state + '" onmousedown="Key_Input(90);"><center>z</center></td>'; }
-        else if(x_y === '2_0'){//r 
-          board_string = board_string + "<td id=" + x_y + ' class="move_to ' + state + '" onmousedown="Key_Input(82);"><center>r</center></td>'; }
-        else{ //everything else 
-         // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onmousedown="Mouse_Down(this.id);"></td>'; }
-         // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onclick="Mouse_Down(this.id);"></td>'; }
-        board_string = board_string + "<td id=" + x_y + ' class="' + state + '" ontouchend="Mouse_Down(this.id);" onclick="Mouse_Down(this.id);"> </td>'; }    
-        //board_string = board_string + "<td id=" + x_y + ' class="' + state + '" ontouchend="Mouse_Down(this.id);" ></td>'; }     
-     }
+        if (x_y === "0_0") {
+          //z
+          board_string =
+            board_string +
+            "<td id=" +
+            x_y +
+            ' class="move_to ' +
+            state +
+            '" onmousedown="Key_Input(90);"><center>z</center></td>';
+        } else if (x_y === "2_0") {
+          //r
+          board_string =
+            board_string +
+            "<td id=" +
+            x_y +
+            ' class="move_to ' +
+            state +
+            '" onmousedown="Key_Input(82);"><center>r</center></td>';
+        } else {
+          //everything else
+          // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onmousedown="Mouse_Down(this.id);"></td>'; }
+          // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onclick="Mouse_Down(this.id);"></td>'; }
+          board_string =
+            board_string +
+            "<td id=" +
+            x_y +
+            ' class="' +
+            state +
+            '" ontouchend="Mouse_Down(this.id);" onclick="Mouse_Down(this.id);"> </td>';
+        }
+        //board_string = board_string + "<td id=" + x_y + ' class="' + state + '" ontouchend="Mouse_Down(this.id);" ></td>'; }
+      }
     }
     board_string = board_string + "</tr>";
   }
@@ -1121,7 +1154,8 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
       let letter = board[x_y].letter;
       element = document.getElementById(x_y);
       element.classList.remove("selected"); //reset possible selected classes
-      if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
+      if (x_y != "0_0" && x_y != "2_0") {
+        //z r ignore
         element.classList.remove("move_to"); //reset possible move classes
       }
       //highlight possible moves
@@ -1140,17 +1174,19 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
       }
 
       if (board[x_y].is_a === "empty") {
-        if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
-        element.innerHTML = "<div class=content></div>";
-      }
+        if (x_y != "0_0" && x_y != "2_0") {
+          //z r ignore
+          element.innerHTML = "<div class=content></div>";
+        }
         element.classList.remove("me");
         element.classList.remove("wall");
         element.classList.remove("atom");
       }
       if (board[x_y].is_a === "wall") {
-        if((x_y != '0_0') && (x_y != '2_0')){//z r ignore 
-        element.innerHTML = "<div class=content></div>";
-      }      
+        if (x_y != "0_0" && x_y != "2_0") {
+          //z r ignore
+          element.innerHTML = "<div class=content></div>";
+        }
         element.classList.add("wall");
       }
       if (board[x_y].is_a === "atom") {
@@ -1180,8 +1216,14 @@ function Build_Puzzle(input_string) {
   //build display board and board objects
   let element = document.getElementById("Item_Menu");
   element.style.display = "none";
-  if(board_mode === 'game'){document.getElementById("ASCII").style.display = "none";}
-  else{document.getElementById("ASCII").style.display = "block";}
+  element = document.getElementById("win");
+  element.classList.remove("win");
+  element.innerHTML = "";
+  if (board_mode === "game") {
+    document.getElementById("ASCII").style.display = "none";
+  } else {
+    document.getElementById("ASCII").style.display = "block";
+  }
   ASCII_To_Objects(input_string);
   Objects_To_Create_Empty_HTML_Board();
   Objects_To_Place_Pieces_On_HTML_Board();
@@ -1270,7 +1312,7 @@ function Restore_Object_Methods_From_JSON(json_string) {
 }
 
 //editor functions -------------------------
-function Blank_Editor_ASCII(){
+function Blank_Editor_ASCII() {
   let x_squares = 10;
   let y_squares = 10;
   let x_size = x_squares * 2 - 2;
@@ -1282,17 +1324,17 @@ function Blank_Editor_ASCII(){
     for (let x = 0; x <= x_size; x++) {
       ascii_text = ascii_text + "0";
     }
-  }  
+  }
   return ascii_text;
 }
 
-function Reset_Editor(){
+function Reset_Editor() {
   localStorage.editor_ascii_text = Blank_Editor_ASCII();
   Editor();
 }
 
-function ASCII_To_Editor_Board(){
-  localStorage.editor_ascii_text = document.getElementById("input_area").value ;
+function ASCII_To_Editor_Board() {
+  localStorage.editor_ascii_text = document.getElementById("input_area").value;
   Editor();
 }
 
@@ -1301,12 +1343,12 @@ function Place_Item_Menu(square_id) {
   let x = event.clientX; // Get the horizontal coordinate
   let y = event.clientY; // Get the vertical coordinate
   let element = document.getElementById("Item_Menu");
- // element.style.left = x + "px";
+  // element.style.left = x + "px";
   //element.style.top = y + "px";
   element.style.display = "block";
   selected_square = square_id;
   //show / block menu items
-  document.getElementById(square_id).classList.add('selected'); //highlight box to edit
+  document.getElementById(square_id).classList.add("selected"); //highlight box to edit
   let class_is = document.getElementById(square_id).classList[0];
   if (class_is === "vacuum") {
     document.getElementById("Item_Menu_Atoms").style.display = "block";
@@ -1360,9 +1402,9 @@ function Place_Item(letter) {
   //check for bonds
   Join_Free_Atoms();
   Objects_To_Place_Pieces_On_HTML_Board();
-  
-  document.getElementById(x_y).classList.remove('selected'); //de-highlight box to edit
-  
+
+  document.getElementById(x_y).classList.remove("selected"); //de-highlight box to edit
+
   //hide menu
   let element = document.getElementById("Item_Menu");
   element.style.display = "none";
@@ -1371,19 +1413,21 @@ function Place_Item(letter) {
   //Save editor state
   if (supports_html5_storage() == true) {
     //localStorage.editor_board = JSON.stringify(board);
-    localStorage.editor_ascii_text =  document.getElementById("input_area").value;
+    localStorage.editor_ascii_text = document.getElementById(
+      "input_area"
+    ).value;
   }
 }
 
-function Editor_Board_To_ASCII(){
-   //convert to ascii
+function Editor_Board_To_ASCII() {
+  //convert to ascii
   let ascii_string = board.x_y_me.trim() + "\r\n";
   for (let y = 0; y <= board.height; y++) {
     for (let x = 0; x <= board.width; x++) {
       ascii_string = ascii_string + board[x + "_" + y].letter;
     }
     ascii_string = ascii_string + "\r\n";
-  }  
+  }
   return ascii_string;
 }
 
@@ -1455,15 +1499,15 @@ function Crop_Editor_Board() {
   //convert x_y_me_editor to x_y_me based on top_wall and left_wall
   [x, y] = String_To_X_Y(board.x_y_me);
   board.x_y_me = x - left_wall + "_" + (y - top_wall);
-   //convert to ascii
+  //convert to ascii
   let ascii_string = board.x_y_me.trim() + "\r\n";
   for (y = top_wall; y <= bottom_wall; y++) {
     for (x = left_wall; x <= right_wall; x++) {
       ascii_string = ascii_string + board[x + "_" + y].letter;
     }
     ascii_string = ascii_string + "\r\n";
-  }  
-  
+  }
+
   //save to input_box
   document.getElementById("input_area").value = ascii_string;
   Build_Puzzle(ascii_string);
@@ -1516,10 +1560,11 @@ function X_Y_To_String(x, y) {
   return x.toString() + "_" + y.toString();
 }
 
-function String_To_X_Y(x_y) { //returns [x,y] int  
-   if (typeof x_y === "undefined") {
-     return [0,0];
-   } 
+function String_To_X_Y(x_y) {
+  //returns [x,y] int
+  if (typeof x_y === "undefined") {
+    return [0, 0];
+  }
   let x, y;
   [x, y] = x_y.split("_");
   return [parseInt(x), parseInt(y)];
@@ -1613,9 +1658,9 @@ function Mouse_Down(x_y) {
   }
 }
 
-//main start up routines 
+//main start up routines
 function Game() {
-  board_mode = 'game';
+  board_mode = "game";
   //document.getElementById("Game_Time").style.display = "block";
   if (Restore_State() == false) {
     Load_Puzzle("aye");
@@ -1627,10 +1672,11 @@ function Editor() {
   board_mode = "editor";
   //document.getElementById("Game_Time").style.display = "none";
   let ascii_text;
-  if (typeof localStorage.editor_ascii_text === "undefined") { // no stored editor
+  if (typeof localStorage.editor_ascii_text === "undefined") {
+    // no stored editor
     ascii_text = Blank_Editor_ASCII();
-  }
-  else{ //stored editor
+  } else {
+    //stored editor
     ascii_text = localStorage.editor_ascii_text;
   }
   document.getElementById("input_area").value = ascii_text;
@@ -1763,11 +1809,11 @@ function supports_html5_storage() {
 }
 
 function Load_Puzzle(puzzle) {
-  board_mode = 'game';
-  let element = document.getElementById("win");
-  element.classList.remove("win");
-  element.innerHTML = "";
-  element = document.getElementById("Item_Menu");
+  board_mode = "game";
+  //let element = document.getElementById("win");
+  //element.classList.remove("win");
+  //element.innerHTML = "";
+  let element = document.getElementById("Item_Menu");
   element.style.display = "none";
   Build_Puzzle(puzzles[puzzle]);
   board.title = puzzle;
@@ -1787,6 +1833,16 @@ function Factory_Reset() {
 
 //free roaming code ----------------------------
 Game();
+
+//build puzzle drop down
+var keys = Object.keys(puzzles);
+for (key of keys) {
+  let select_box = document.getElementById("puzzle_select");
+  let option = document.createElement("option");
+  option.text = key;
+  option.value = key;
+  select_box.add(option);
+}
 
 //disable arrow keys from scrolling page
 window.addEventListener(
