@@ -4,10 +4,13 @@
 <html lang="en" >
 
 <head>
-  <meta name="description" content="Chemical Zen - Sokobond in JS">
+
+ <meta name="description" content="Chemical Zen - Sokobond in JS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width" initial-scale="1.0">
   <title>Chemical Zen - Sokobond in JS</title>
+  
+  
   
 <style>
 table {
@@ -482,6 +485,7 @@ var direction = {
 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
+var molecule = {}; // will show which atoms are in same molecule or not molecule[x_y] = 1 , 2 , 3 , 4 , etc. calculate before every move
 var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
@@ -854,6 +858,23 @@ function Atom(x, y, letter) {
     return new Empty(x, y, letter); // return empty instead
   }
 
+  this.Build_Molecules = function(molecule_number){
+    let x_y = this.x.toString() + "_" + this.y.toString();
+    if(typeof molecule[x_y] != 'undefined'){return false;} //already done this one
+    molecule[x_y] = molecule_number; 
+    let all_news = Get_NEWS(this.x, this.y);
+    for (let key in direction) {//N,S,E,W
+      let x_y_half_step = all_news[key].x_y_half_step;
+      let x_y_full_step = all_news[key].x_y_full_step;      
+      if (board[x_y_half_step].is_a == "bond") {//there is a bond
+        if (board[x_y_full_step].is_a === "atom") {//this is a bonded atom!
+        board[x_y_full_step].Build_Molecules(molecule_number);
+        }
+      } 
+    }
+  return true;
+  };
+  
   this.Can_I_Move = function (NEWS) {
     //also transfers force
     let dx = direction[NEWS].x;
@@ -878,23 +899,23 @@ function Atom(x, y, letter) {
     } //and atom is already moving here. fail
     //3. state atom's intention of moving here
     atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
-
-    //4. see if non bonded atom,not touched, is in our way, and see if it can move
-    if (board[x_y_half_step].is_a !== "bond") {
-      //no bond in our way
-      if (board[x_y_full_step].is_a === "atom") {
-        //atom in our way
-        if (touched[x_y_full_step] !== 1) {
-          //hasn't been touched
-          if (!board[x_y_full_step].Can_I_Move(NEWS)) {
-            return false;
+    
+    //4. see if non bonded atom,not touched, not in our molecule, is in our way, and see if it can move
+    if (board[x_y_half_step].is_a !== "bond") {//no bond in our way     
+      if (board[x_y_full_step].is_a === "atom") {//atom in our way
+        if (touched[x_y_full_step] !== 1) {//hasn't been touched
+          if(molecule[x_y] != molecule[x_y_full_step]){//ONLY PUSH atoms that are not in our molecule!!!!
+            if (!board[x_y_full_step].Can_I_Move(NEWS)) {
+              return false;
+            }
           }
         }
       }
     }
-
+    
+    //this is for bonds and atoms in our molecule!
     //see if bonds (not touched) can move
-    all_news = Get_NEWS(this.x, this.y);
+    //all_news = Get_NEWS(this.x, this.y); duplicate
     for (let key in all_news) {
       let x_y_half_step = all_news[key].x_y_half_step;
       let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
@@ -902,11 +923,10 @@ function Atom(x, y, letter) {
         if (!board[x_y_half_step].Can_I_Move(NEWS, key, x_y, receiving_atom)) {
           return false;
         } //bond routine needs NEWS,transmitting_atom,recieving_atom
-        //
       }
     }
 
-    //if here, all downstream tests are good to move. but this does not mean that the move will not fail.
+    //if here, all downstream tests are good to move. but this does not mean that the move will not fail due to another branch, atom, or wall
     this.x = this.x + dx + dx;
     this.y = this.y + dy + dy;
     move[x_y] = x_y_full_step; //used to move atoms if we are good to go
@@ -915,6 +935,7 @@ function Atom(x, y, letter) {
   };
 
   this.Join_To_Free_Atoms = function () {
+    //original game seems to attach to atoms with a higher free valance value first. we may need to do this too. see gold-chandalier 
     //Return_Free_Valence of this atom
     let free_valence = this.Return_Free_Valence();
     //for adjacent atoms in direction with no bond && adjacent atoms with free valence , create a bond until my free_valence === 0
@@ -1138,6 +1159,7 @@ function Objects_To_Create_Empty_HTML_Board() {
 }
 
 function Objects_To_Place_Pieces_On_HTML_Board() {
+  Build_Molecules();
   let element = document.getElementById("puzzle_title");
   element.innerHTML = board.title;
   for (let y = 0; y <= board.height; y++) {
@@ -1531,6 +1553,23 @@ function Join_Free_Atoms() {
   }
 }
 
+function Build_Molecules(){
+  molecule = {};
+  var molecule_count = 0;
+  for (let y = 0; y <= board.height; y++) {
+    for (let x = 0; x <= board.width; x++) {
+      let x_y = x + '_' + y;
+      if(board[x_y].is_a === 'atom'){
+        if(typeof molecule[x_y] == 'undefined'){//ignore ones we have already checked
+          molecule_count++; //if here, this must be a brand new molecule
+          board[x_y].Build_Molecules(molecule_count); //will add all bonded atoms to this molecule         
+        }
+      }
+    }
+  }
+  
+}
+
 function win_routine() {
   sound_win.play();
   let element = document.getElementById("win");
@@ -1724,6 +1763,7 @@ function Key_Input(keyCode) {
   }
   if (move_key_pressed) {
     //clear and get ready for another move
+    //Build_Molecules();
     move = {};
     atom_intended_move = {};
     touched = {};
@@ -1831,7 +1871,7 @@ Game();
 
 //build puzzle drop down
 var keys = Object.keys(puzzles);
-for (key of keys) {
+for (var key of keys) {
   let select_box = document.getElementById("puzzle_select");
   let option = document.createElement("option");
   option.text = key;
