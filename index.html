@@ -5,10 +5,18 @@
 
 <head>
 
- <meta name="description" content="Chemical Zen - Sokobond in JS">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width" initial-scale="1.0">
-  <title>Chemical Zen - Sokobond in JS</title>
+  <meta charset="UTF-8">
+  
+<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+
+
+  <title>CodePen - Chemical Zen - Sokobond in JS</title>
+  
   
   
   
@@ -485,7 +493,7 @@ var direction = {
 
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
-var molecule = {}; // will show which atoms are in same molecule or not molecule[x_y] = 1 , 2 , 3 , 4 , etc. calculate before every move
+var molecule = {}; // will show which atoms are in same molecule or not molecule[x_y] = 1 , 2 , 3 , 4 , etc. calculate before every move. required so we only push / pull via bonds atoms in our molecule
 var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
@@ -936,12 +944,26 @@ function Atom(x, y, letter) {
 
   this.Join_To_Free_Atoms = function () {
     //original game seems to attach to atoms with a higher free valance value first. we may need to do this too. see gold-chandalier 
+    //to do this find largests to smallest free valances around us and make a NEWS_sorted_array we can use in for (var key in all_news) eg: for (var key in all_news_sorted_array)
+    var NEWS_valances = {};
+    var all_news_sorted_array = []; //pop?
+    let all_news = Get_NEWS(this.x, this.y);
+    for (var key in all_news) {
+      let x_y_full_step = all_news[key].x_y_full_step;
+      if(board[x_y_full_step].is_a === 'atom'){
+        NEWS_valances[key] = board[x_y_full_step].Return_Free_Valence();
+      }
+    }       
+    //sort the valences high to low
+    all_news_sorted_array = Object.entries(NEWS_valances).sort((a,b) => b[1]-a[1]).map(el=>el[0]);
+    
     //Return_Free_Valence of this atom
     let free_valence = this.Return_Free_Valence();
     //for adjacent atoms in direction with no bond && adjacent atoms with free valence , create a bond until my free_valence === 0
     //for(var key in direction){
-    let all_news = Get_NEWS(this.x, this.y);
-    for (var key in all_news) {
+    all_news = Get_NEWS(this.x, this.y);
+    //for (var key in all_news) {
+    for (var key of all_news_sorted_array) {//using sorted NEWS based on valences above
       if (free_valence <= 0) {
         return;
       }
@@ -1251,7 +1273,7 @@ function ASCII_To_Objects(ascii_string) {
   Prep_New_Game();
   ascii_string = ascii_string.trim();
   let lines = ascii_string.split("\n"); //1st line is my position
-  let x_y_me = lines.shift();
+  let x_y_me = lines.shift().trim();
   board.x_y_me = x_y_me; //from string
   [board.x_me, board.y_me] = String_To_X_Y(x_y_me);
   let y = -1;
@@ -1545,8 +1567,13 @@ function Prep_New_Game() {
   error_msg = "";
 }
 
+//suspect orig bonds to biggest nearby free valance first! See chandeliere puzzle. 
+//fixed with reservations. seems like cheating!
 function Join_Free_Atoms() {
-  for (let key in board) {
+   if (board[board.x_y_me].is_a === "atom") {
+     board[board.x_y_me].Join_To_Free_Atoms(); //do me first
+   }
+  for (let key in board) { //do all other atoms
     if (board[key].is_a === "atom") {
       board[key].Join_To_Free_Atoms();
     }
