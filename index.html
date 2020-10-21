@@ -4,7 +4,7 @@
 <html lang="en" >
 
 <head>
-  <meta name="description" content="Chemical Zen - Sokobond in JS">
+ <meta name="description" content="Chemical Zen - Sokobond in JS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width" initial-scale="1.0">
   <title>Chemical Zen - Sokobond in JS</title>
@@ -1715,10 +1715,8 @@ function Game() {
   board_mode = "game";
   //document.getElementById("Game_Time").style.display = "block";
   if (Restore_State() == false) {
-    //let name = document.getElementById("puzzle_select");
-    let name = Object.keys(puzzles)[0]; //returns 'someVal'
+    let name = Object.keys(puzzles)[0]; //returns first game name in puzzles
     Load_Puzzle(name);
-    //Load_Puzzle("aye");
   }
   board_mode = "game";
 }
@@ -1850,10 +1848,17 @@ function Save_State() {
   if (supports_html5_storage() == false) {
     return;
   }
-
+try {
   localStorage.board = JSON.stringify(board);
   localStorage.previous_board = JSON.stringify(previous_board);
   localStorage.input_area = document.getElementById("input_area").value;
+}
+catch(err) {
+  console.log(err + ' out lof local storage space. Lots of moves!');
+  //Block of code to handle errors
+}
+finally {
+}
 }
 
 function supports_html5_storage() {
