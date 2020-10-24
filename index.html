@@ -4,10 +4,10 @@
 <html lang="en" >
 
 <head>
- <meta name="description" content="Chemical Zen - Sokobond in JS">
+  <meta name="description" content="Chemical Zen - Sokobond in JS">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width" initial-scale="1.0">
-  <title>Chemical Zen - Sokobond in JS</title>
+  <title>Chemical Zen - Sokobond in JS</title>  
   
 <style>
 table {
@@ -348,15 +348,14 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
     </select>
     <br><br>
     --- Editor ---
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Puzzle editor</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">Current puzzle to editor</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor board</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Build_Puzzle(document.getElementById('input_area').value);">Build puzzle</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Reset_Editor();">Reset editor board</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();ASCII_To_Editor_Board();">ASCII to editor board</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Puzzle editor saved</a>
+     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board =   document.getElementById('input_area').value;Editor();">ASCII to editor board or current puzzle</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);localStorage.editor_board=ascii;">Build puzzle from ASCII</a>
+     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor board</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a>
+   <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor board</a>
     --- Problems? ---
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();">Factory reset</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();Game();">Factory reset</a>
 
   </nav>
 
@@ -486,7 +485,7 @@ var molecule = {}; // will show which atoms are in same molecule or not molecule
 var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
-var previous_board = []; //array for z - undo and to reset board. it will contain previous_board.push(JSON.stringify(board))
+var previous_boards = []; //array for z - undo and to reset board. it will contain previous_boards.push(ascii). last one is current state
 var touched = {}; //this allows us to easily determine if we have already processed an atom or bond. touched[x_y]=1;
 var selected_square = "0_0"; //used for editor menu trigger square identification
 
@@ -854,26 +853,26 @@ function Atom(x, y, letter) {
   if (x <= 0 || y <= 0 || x >= board.width || y >= board.hight) {
     //atoms cannot exist on edge. Only walls.
     alert("Atom cannot go on the edge");
-    return new Empty(x, y, letter); // return empty instead
+    return new Empty(x, y, '0'); // return empty instead
   }
 
   this.Build_Molecules = function(molecule_number){
     let x_y = this.x.toString() + "_" + this.y.toString();
     if(typeof molecule[x_y] != 'undefined'){return false;} //already done this one
-    molecule[x_y] = molecule_number; 
+    molecule[x_y] = molecule_number;
     let all_news = Get_NEWS(this.x, this.y);
     for (let key in direction) {//N,S,E,W
       let x_y_half_step = all_news[key].x_y_half_step;
-      let x_y_full_step = all_news[key].x_y_full_step;      
+      let x_y_full_step = all_news[key].x_y_full_step;
       if (board[x_y_half_step].is_a == "bond") {//there is a bond
         if (board[x_y_full_step].is_a === "atom") {//this is a bonded atom!
         board[x_y_full_step].Build_Molecules(molecule_number);
         }
-      } 
+      }
     }
   return true;
   };
-  
+
   this.Can_I_Move = function (NEWS) {
     //also transfers force
     let dx = direction[NEWS].x;
@@ -898,9 +897,9 @@ function Atom(x, y, letter) {
     } //and atom is already moving here. fail
     //3. state atom's intention of moving here
     atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
-    
+
     //4. see if non bonded atom,not touched, not in our molecule, is in our way, and see if it can move
-    if (board[x_y_half_step].is_a !== "bond") {//no bond in our way     
+    if (board[x_y_half_step].is_a !== "bond") {//no bond in our way
       if (board[x_y_full_step].is_a === "atom") {//atom in our way
         if (touched[x_y_full_step] !== 1) {//hasn't been touched
           if(molecule[x_y] != molecule[x_y_full_step]){//ONLY PUSH atoms that are not in our molecule!!!!
@@ -911,7 +910,7 @@ function Atom(x, y, letter) {
         }
       }
     }
-    
+
     //this is for bonds and atoms in our molecule!
     //see if bonds (not touched) can move
     //all_news = Get_NEWS(this.x, this.y); duplicate
@@ -934,7 +933,7 @@ function Atom(x, y, letter) {
   };
 
   this.Join_To_Free_Atoms = function () {
-    //original game seems to attach to atoms with a higher free valance value first. we may need to do this too. see gold-chandalier 
+    //original game seems to attach to atoms with a higher free valance value first. we may need to do this too. see gold-chandalier
     //to do this find largests to smallest free valances around us and make a NEWS_sorted_array we can use in for (var key in all_news) eg: for (var key in all_news_sorted_array)
     var NEWS_valances = {};
     var all_news_sorted_array = []; //pop?
@@ -944,10 +943,10 @@ function Atom(x, y, letter) {
       if(board[x_y_full_step].is_a === 'atom'){
         NEWS_valances[key] = board[x_y_full_step].Return_Free_Valence();
       }
-    }       
+    }
     //sort the valences high to low
     all_news_sorted_array = Object.entries(NEWS_valances).sort((a,b) => b[1]-a[1]).map(el=>el[0]);
-    
+
     //Return_Free_Valence of this atom
     let free_valence = this.Return_Free_Valence();
     //for adjacent atoms in direction with no bond && adjacent atoms with free valence , create a bond until my free_valence === 0
@@ -1112,10 +1111,6 @@ function Objects_To_Create_Empty_HTML_Board() {
   let width = board.width;
   let height = board.height;
   let board_string = '<div id="puzzle_title">title</div>';
-  //board_string = board_string + "<div id='left_arrow'> << </div>";
-  //board_string = board_string + "<div id='right_arrow'> >> </div>";
-  //board_string =​ board_string + "<div id='top_arrow'> || </div>";
-  //board_string = board_string + "<div id='bottom_arrow'> || </div>";
   board_string = board_string + '<table id="board_table">';
   for (let y = 0; y <= height; y++) {
     board_string = board_string + "<tr>";
@@ -1152,8 +1147,6 @@ function Objects_To_Create_Empty_HTML_Board() {
             '" onmousedown="Key_Input(82);"><center>r</center></td>';
         } else {
           //everything else
-          // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onmousedown="Mouse_Down(this.id);"></td>'; }
-          // board_string = board_string + "<td id=" + x_y + ' class="' + state + '" onclick="Mouse_Down(this.id);"></td>'; }
           board_string =
             board_string +
             "<td id=" +
@@ -1162,7 +1155,6 @@ function Objects_To_Create_Empty_HTML_Board() {
             state +
             '" ontouchend="Mouse_Down(this.id);" onclick="Mouse_Down(this.id);"> </td>';
         }
-        //board_string = board_string + "<td id=" + x_y + ' class="' + state + '" ontouchend="Mouse_Down(this.id);" ></td>'; }
       }
     }
     board_string = board_string + "</tr>";
@@ -1242,11 +1234,9 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
   }
 }
 
-function Build_Puzzle(input_string) {
+function Build_Puzzle(input_string) {//called on load, z key, and r key. it creates html board and places pieces on board so no save state stuff here
   //build display board and board objects
-  let element = document.getElementById("Item_Menu");
-  element.style.display = "none";
-  element = document.getElementById("win");
+  let element = document.getElementById("win");
   element.classList.remove("win");
   element.innerHTML = "";
   if (board_mode === "game") {
@@ -1255,13 +1245,14 @@ function Build_Puzzle(input_string) {
     document.getElementById("ASCII").style.display = "block";
   }
   ASCII_To_Objects(input_string);
+  Join_Free_Atoms();
   Objects_To_Create_Empty_HTML_Board();
   Objects_To_Place_Pieces_On_HTML_Board();
-}
+ }
 
 //object  functions
 function ASCII_To_Objects(ascii_string) {
-  Prep_New_Game();
+  Prep_New_Board();
   ascii_string = ascii_string.trim();
   let lines = ascii_string.split("\n"); //1st line is my position
   let x_y_me = lines.shift().trim();
@@ -1321,7 +1312,6 @@ function ASCII_To_Objects(ascii_string) {
 
 //as we can only easily save objects as json, and json strips the methods, we need this routine to add the methods to the json objects
 function Restore_Object_Methods_From_JSON(json_string) {
-  // was Set_Board
   board = JSON.parse(json_string);
   for (let key in board) {
     let x, y;
@@ -1342,6 +1332,7 @@ function Restore_Object_Methods_From_JSON(json_string) {
 }
 
 //editor functions -------------------------
+
 function Blank_Editor_ASCII() {
   let x_squares = 10;
   let y_squares = 10;
@@ -1356,16 +1347,6 @@ function Blank_Editor_ASCII() {
     }
   }
   return ascii_text;
-}
-
-function Reset_Editor() {
-  localStorage.editor_ascii_text = Blank_Editor_ASCII();
-  Editor();
-}
-
-function ASCII_To_Editor_Board() {
-  localStorage.editor_ascii_text = document.getElementById("input_area").value;
-  Editor();
 }
 
 function Place_Item_Menu(square_id) {
@@ -1408,7 +1389,7 @@ function Make_Me() {
   board.x_me = x;
   board.y_me = y;
   Objects_To_Place_Pieces_On_HTML_Board(); //need to redraw to update svg
-  document.getElementById("input_area").value = Editor_Board_To_ASCII();
+  document.getElementById("input_area").value = Board_To_ASCII();
 }
 
 function Place_Item(letter) {
@@ -1439,21 +1420,19 @@ function Place_Item(letter) {
   let element = document.getElementById("Item_Menu");
   element.style.display = "none";
 
-  document.getElementById("input_area").value = Editor_Board_To_ASCII();
+  document.getElementById("input_area").value = Board_To_ASCII();
   //Save editor state
-  if (supports_html5_storage() == true) {
-    //localStorage.editor_board = JSON.stringify(board);
-    localStorage.editor_ascii_text = document.getElementById(
-      "input_area"
-    ).value;
-  }
+  localStorage.editor_board = document.getElementById("input_area").value;
 }
 
-function Editor_Board_To_ASCII() {
+function Board_To_ASCII() {
   //convert to ascii
   let ascii_string = board.x_y_me.trim() + "\r\n";
   for (let y = 0; y <= board.height; y++) {
     for (let x = 0; x <= board.width; x++) {
+      if(typeof board[x + "_" + y].letter === 'undefined'){
+        board[x + "_" + y].letter = '0'
+      }
       ascii_string = ascii_string + board[x + "_" + y].letter;
     }
     ascii_string = ascii_string + "\r\n";
@@ -1541,11 +1520,10 @@ function Crop_Editor_Board() {
   //save to input_box
   document.getElementById("input_area").value = ascii_string;
   Build_Puzzle(ascii_string);
-  //return ascii_string;
 }
 
 //general functions -------------------------
-function Prep_New_Game() {
+function Prep_New_Board() {
   board = {};
   board.x_me = 0;
   board.y_me = 0;
@@ -1553,12 +1531,11 @@ function Prep_New_Game() {
   board.height = 0;
   move = {};
   atom_intended_move = {};
-  previous_board = [];
   touched = {};
   error_msg = "";
 }
 
-//suspect orig bonds to biggest nearby free valance first! See chandeliere puzzle. 
+//suspect orig bonds to biggest nearby free valance first! See chandeliere puzzle.
 //fixed with reservations. seems like cheating!
 function Join_Free_Atoms() {
    if (board[board.x_y_me].is_a === "atom") {
@@ -1580,12 +1557,12 @@ function Build_Molecules(){
       if(board[x_y].is_a === 'atom'){
         if(typeof molecule[x_y] == 'undefined'){//ignore ones we have already checked
           molecule_count++; //if here, this must be a brand new molecule
-          board[x_y].Build_Molecules(molecule_count); //will add all bonded atoms to this molecule         
+          board[x_y].Build_Molecules(molecule_count); //will add all bonded atoms to this molecule
         }
       }
     }
   }
-  
+
 }
 
 function win_routine() {
@@ -1709,33 +1686,6 @@ function Mouse_Down(x_y) {
     Key_Input(40);
   }
 }
-
-//main start up routines
-function Game() {
-  board_mode = "game";
-  //document.getElementById("Game_Time").style.display = "block";
-  if (Restore_State() == false) {
-    let name = Object.keys(puzzles)[0]; //returns first game name in puzzles
-    Load_Puzzle(name);
-  }
-  board_mode = "game";
-}
-
-function Editor() {
-  board_mode = "editor";
-  //document.getElementById("Game_Time").style.display = "none";
-  let ascii_text;
-  if (typeof localStorage.editor_ascii_text === "undefined") {
-    // no stored editor
-    ascii_text = Blank_Editor_ASCII();
-  } else {
-    //stored editor
-    ascii_text = localStorage.editor_ascii_text;
-  }
-  document.getElementById("input_area").value = ascii_text;
-  Build_Puzzle(ascii_text);
-}
-
 //main routine Key input --------------------------
 
 function Key_Input(keyCode) {
@@ -1743,19 +1693,19 @@ function Key_Input(keyCode) {
     return;
   }
   if (keyCode == 82) {
-    //r 82
-    while (previous_board.length > 0) {
-      Restore_Object_Methods_From_JSON(previous_board.pop());
-      Objects_To_Place_Pieces_On_HTML_Board();
-    }
+    //r 82   
+    Build_Puzzle(previous_boards[0]);  
+    previous_boards = previous_boards.slice(0,1);//only keep the first array element
+    Save_State();
     return;
   }
   if (keyCode == 90) {
     //z:undo
-    if (previous_board.length > 0) {
-      Restore_Object_Methods_From_JSON(previous_board.pop());
-      Objects_To_Place_Pieces_On_HTML_Board();
-      return; //do not hit move routine
+    if (previous_boards.length > 1) {
+      previous_boards.pop(); //last array item is current puzzle. remove it 
+      Build_Puzzle( previous_boards[previous_boards.length-1] );
+      Save_State();
+    return; //do not hit move routine
     }
   }
   let move_key_pressed = false;
@@ -1792,26 +1742,24 @@ function Key_Input(keyCode) {
     if (board[board.x_me + "_" + board.y_me].Can_I_Move(NEWS)) {
       sound_move.stop();
       sound_move.play(); //make a happy sound
-      //save old board state
-      previous_board.push(JSON.stringify(board)); //for z - undo
       //all moves are in move[x_y] = 'x_y_new'
       //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
       //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
       let temp = {};
       let key;
-      for (key in move) {
-        //save temp reference for all moving board objects. then remove the board references (set to empty)
+      for (key in move) {//save temp reference for all moving board objects. then remove the board references (set to empty)
         temp[key] = board[key];
-        board[key] = new Empty(String_To_X_Y(key));
+        board[key] = new Empty(String_To_X_Y(key) , '0');
       }
-      for (key in move) {
-        //now set all moved board references
+      for (key in move) {//now set all moved board references
         board[move[key]] = temp[key];
       }
       //move me
       board.x_y_me = move[board.x_me + "_" + board.y_me];
       [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
       Join_Free_Atoms(); //for every atom, check for atoms that can bond
+      //save board state
+      previous_boards.push( Board_To_ASCII() ); //for z - undo
     } else {
       //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects
       sound_fail.play(); //make a sad sound
@@ -1823,39 +1771,21 @@ function Key_Input(keyCode) {
   }
 }
 
-//load and save routines
-function Restore_State() {
-  if (supports_html5_storage() == false) {
-    return false;
-  }
-  if (typeof localStorage.board === "undefined") {
-    return false;
-  } //nothing to restore. use var
-  //order or restoration is very important here
-  if (typeof localStorage.board === "undefined") {
-    return false;
-  } //nothing to restore. use var
-  document.getElementById("input_area").value = localStorage.input_area;
-  Build_Puzzle(document.getElementById("input_area").value);
-  Restore_Object_Methods_From_JSON(localStorage.board);
-  Join_Free_Atoms();
-  Objects_To_Place_Pieces_On_HTML_Board();
-  previous_board = JSON.parse(localStorage.previous_board);
-  return true;
-}
+//load and save routines ------------------------------------------
 
 function Save_State() {
   if (supports_html5_storage() == false) {
     return;
   }
 try {
-  localStorage.board = JSON.stringify(board);
-  localStorage.previous_board = JSON.stringify(previous_board);
-  localStorage.input_area = document.getElementById("input_area").value;
+  localStorage.previous_boards = JSON.stringify(previous_boards);
 }
-catch(err) {
-  console.log(err + ' out lof local storage space. Lots of moves!');
-  //Block of code to handle errors
+catch(err) {//Block of code to handle errors
+  console.log(err + ' out lof local storage space. Lots of moves Batman!');
+  //remove 2 moves
+  previous_boards.shift();
+  previous_boards.shift();
+  Save_State(); //try agian. Is this wise? 
 }
 finally {
 }
@@ -1871,25 +1801,61 @@ function supports_html5_storage() {
 
 function Load_Puzzle(puzzle) {
   board_mode = "game";
-  //let element = document.getElementById("win");
-  //element.classList.remove("win");
-  //element.innerHTML = "";
-  let element = document.getElementById("Item_Menu");
-  element.style.display = "none";
+  document.getElementById("input_area").value = puzzles[puzzle];
+  previous_boards = [];
+  previous_boards.push(puzzles[puzzle]);
   Build_Puzzle(puzzles[puzzle]);
   board.title = puzzle;
-  document.getElementById("input_area").value = puzzles[puzzle];
   Join_Free_Atoms();
   Objects_To_Place_Pieces_On_HTML_Board();
   Save_State();
 }
 
 function Factory_Reset() {
-  delete localStorage.board;
+  previous_boards.splice(0, previous_boards.length);//delete array
   delete localStorage.editor_board;
-  delete localStorage.input_area;
-  delete localStorage.previous_board;
-  Game();
+  delete localStorage.previous_boards;
+}
+
+//main start up routines
+function Game() {
+  var ascii;
+  board_mode = "game";
+
+   if(! supports_html5_storage()) {
+    alert('This browser does not support HTML 5localStorage');
+    return;
+   }
+
+  if ( (typeof localStorage.previous_boards !== "undefined") && (localStorage.previous_boards !== []) ) {
+      previous_boards = JSON.parse( localStorage.previous_boards ); 
+      ascii = previous_boards[previous_boards.length-1];//last array item is current puzzle
+      document.getElementById("input_area").value = previous_boards[0];
+      Build_Puzzle(ascii);
+  }
+  else{
+    let name = Object.keys(puzzles)[0]; //returns first game name in puzzles
+    ascii = puzzles[name];
+    document.getElementById("input_area").value = ascii;
+    Build_Puzzle(ascii);
+    previous_boards = [];
+    previous_boards.push(ascii);
+    Save_State();
+  }
+
+}
+
+function Editor() {
+  board_mode = "editor";
+  let ascii_text;
+  if (typeof localStorage.editor_board === "undefined") {// no stored editor  
+    ascii_text = Blank_Editor_ASCII();
+  } else {//stored editor  
+    ascii_text = localStorage.editor_board;
+  }
+  document.getElementById("input_area").value = ascii_text;
+  Build_Puzzle(ascii_text);
+  localStorage.editor_board = ascii_text;
 }
 
 //free roaming code ----------------------------
