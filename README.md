@@ -1,5 +1,6 @@
 # Sokobond_JS
 My latest programming project is a Java Script recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. 
+Play a few levels of Sokobond for free and see that it is worth every penny to buy a copy!
 
 I have made a basic graphical puzzle editor to assist the manual string editor.
 I also intend to try and create an algoritm to generate puzzles. That should be fun.
