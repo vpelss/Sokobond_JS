@@ -9,7 +9,7 @@ It is written in JS. There are no JS libraries used. I am using SVG (Scalable Ve
 
 I still use tables, as they work better than pure DIV / CSS on game grids. CSS, pthuey!
 
-This master git is running live at:
+It is running live at:
 https://www.emogic.com/Sokobond_JS/
 
 Please do not distribute the original Sokobond game puzzles without the authors consent. Please support the game designers by purchasing their software.
