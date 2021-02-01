@@ -4,9 +4,9 @@
 <html lang="en" >
 
 <head>
-<meta name="description" content="Chemical Zen - Sokobond in JS">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width" initial-scale="1.0">
+
+  <meta charset="UTF-8">
+  
   <title>Chemical Zen - Sokobond in JS</title>
   
 <style>
@@ -319,7 +319,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   
   
 
-</head>
+<script async src='/cdn-cgi/bm/cv/669835187/api.js'></script></head>
 
 <body translate="no" >
   <html>
@@ -440,10 +440,9 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 
   <div id="win"></div>
 
-</body>
+<script type="text/javascript">(function(){window['__CF$cv$params']={r:'61ac8c9b28a3e0ea',m:'f14f558535f546788686da53efe280c403781f3a-1612191702-1800-AbU9Ob0A9gHYzFqPaaRZ7XLxN/Z1Gt7x8RibViytJ+dHWFj8G8DRDMi/4flG9Amy6/qZ/gngJga+s1mzI09fTAJzKVvBXpEce+45X1MBR8/R19klF6fbCQvx1Xu1fnM+/NcT5wxqdASP4T2AEZp6lMxqHXdB3Vd+V9v1JD2MjwfD',s:[0x2525da087b,0x1cf3f7c7c5],}})();</script></body>
 
 </html>
-  
   
   
       <script id="rendered-js" >
@@ -962,8 +961,9 @@ function Atom(x, y, letter) {
     }
 
     //if here, all downstream tests are good to move. but this does not mean that the move will not fail due to another branch, atom, or wall
-    this.x = this.x + dx + dx;
-    this.y = this.y + dy + dy;
+    //premature this.x should only be updated when we move.
+    //this.x = this.x + dx + dx;
+    //this.y = this.y + dy + dy;
     move[x_y] = x_y_full_step; //used to move atoms if we are good to go
     //or move[x_y] = '' + this.x + '_' + this.y;
     return true;
@@ -1058,7 +1058,11 @@ function Bond(x, y, letter) {
     //also transfers force
     let dx = direction[NEWS].x;
     let dy = direction[NEWS].y;
-    let x_y = this.x.toString() + "_" + this.y.toString();
+    //note: this.x and this.y may be wrong
+   // let xx = String_To_X_Y(transmitting_atom)[0] + dx;
+    //let yy = String_To_X_Y(transmitting_atom)[1] + dy;
+   // let x_y = xx.toString() + "_" + yy.toString();    
+    let x_y = this.x.toString() + "_" + this.y.toString();    
     let all_news = Get_NEWS(this.x, this.y);
     let x_y_half_step = all_news[NEWS].x_y_half_step;
     let x_y_full_step = all_news[NEWS].x_y_full_step;
@@ -1117,9 +1121,8 @@ function Bond(x, y, letter) {
     }
 
     //move bond. second half of calculation, see above.
-    this.x = half_move_x + dx;
-    this.y = half_move_y + dy;
-    move[x_y] = "" + this.x + "_" + this.y; //used to move bond if we are good to go
+    //premature. this.x should only be updated when we move. //this.x = half_move_x + dx; // this.y = half_move_y + dy; //move[x_y] = "" + this.x + "_" + this.y; //used to move bond if we are good to go    
+    move[x_y] = "" + (half_move_x + dx) + "_" + (half_move_y + dy); //used to move bond if we are good to go
     return true;
   };
 
@@ -1790,8 +1793,9 @@ function Key_Input(keyCode) {
       sound_move.stop();
       sound_move.play(); //make a happy sound
       //all moves are in move[x_y] = 'x_y_new'
-      //so for all premoves (keys) copy all the references temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
-      //then for each x_y key copy to new position board[x_y_new] = temp[x_y]
+      //so for all premoves (keys) copy all the "references" of the atom or bond object : temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
+      //create a new Empty object at the old location
+      //then for each x_y key copy the "references" of the atom or board object to new position board[x_y_new] = temp[x_y]
       let temp = {};
       let key;
       for (key in move) {//save temp reference for all moving board objects. then remove the board references (set to empty)
@@ -1799,9 +1803,11 @@ function Key_Input(keyCode) {
         board[key] = new Empty(String_To_X_Y(key) , '0');
       }
       for (key in move) {//now set all moved board references
-        board[move[key]] = temp[key];
+        let new_x_y = move[key];
+        board[new_x_y] = temp[key];
+        [board[new_x_y].x , board[new_x_y].y] = String_To_X_Y(new_x_y); //set atom or bond this.x , this.y to new values
       }
-      //move me
+      //move me locator variable
       board.x_y_me = move[board.x_me + "_" + board.y_me];
       [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
       Join_Free_Atoms(); //for every atom, check for atoms that can bond
