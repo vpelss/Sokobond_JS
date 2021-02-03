@@ -5,9 +5,10 @@
 
 <head>
 
-  <meta charset="UTF-8">
-  
   <title>Chemical Zen - Sokobond in JS</title>
+  
+  
+  
   
 <style>
 table {
@@ -319,7 +320,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   
   
 
-<script async src='/cdn-cgi/bm/cv/669835187/api.js'></script></head>
+</head>
 
 <body translate="no" >
   <html>
@@ -348,12 +349,15 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
     </select>
     <br><br>
     --- Editor ---
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Puzzle editor saved</a>
-     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board =   document.getElementById('input_area').value;Editor();">ASCII to editor board or current puzzle</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a>
+     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board =   document.getElementById('input_area').value;Editor();">ASCII to update editor OR puzzle to editor</a>
+    <!--
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = Board_To_ASCII() ;Editor();">Current puzzle state to editor</a>
+   -->
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Build puzzle from ASCII</a>
-     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor board</a>
+     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a>
-   <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor board</a>
+   <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor</a>
     --- Problems? ---
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();Game();">Factory reset</a>
 
@@ -440,7 +444,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 
   <div id="win"></div>
 
-<script type="text/javascript">(function(){window['__CF$cv$params']={r:'61ac8c9b28a3e0ea',m:'f14f558535f546788686da53efe280c403781f3a-1612191702-1800-AbU9Ob0A9gHYzFqPaaRZ7XLxN/Z1Gt7x8RibViytJ+dHWFj8G8DRDMi/4flG9Amy6/qZ/gngJga+s1mzI09fTAJzKVvBXpEce+45X1MBR8/R19klF6fbCQvx1Xu1fnM+/NcT5wxqdASP4T2AEZp6lMxqHXdB3Vd+V9v1JD2MjwfD',s:[0x2525da087b,0x1cf3f7c7c5],}})();</script></body>
+</body>
 
 </html>
   
@@ -448,13 +452,12 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
       <script id="rendered-js" >
 //global vars -----------------------
 var error_msg = "";
-//var input_string;
 var empty_chars = ["0"];
 var atom_chars = ["H", "h", "O", "C", "N"];
 var wall_chars = ["W"];
 var modifier_chars = ["+", "-", "."];
 var bond_chars = ["1", "2", "3", "4"];
-var validate_board_pos = {}; //note keys (hyperspace,vacuum,bond_vert,bond_horiz) match state/class so we can easily do board error checking during the board build
+var validate_board_pos = {}; //note: the keys (hyperspace,vacuum,bond_vert,bond_horiz) match state/class so we can easily do board error checking during the board build
 validate_board_pos.hyperspace = empty_chars.concat(modifier_chars);
 validate_board_pos.vacuum = empty_chars.concat(atom_chars, wall_chars);
 validate_board_pos.bond_vert = empty_chars.concat(bond_chars);
@@ -481,7 +484,7 @@ var direction = {
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
 var molecule = {}; // will show which atoms are in same molecule or not molecule[x_y] = 1 , 2 , 3 , 4 , etc. calculate before every move. required so we can  push / pull via bonds atoms in our molecule IN OREDR. otherwise we could jump to our tail and push / pull in wrong direction by bonds....
-var molecule_last_count; //so we can easily split molecules when trying to move . Molecule_Split() 
+var molecule_last_count; //set on fresh Build_Molecules(). used so we can easily split molecules when trying to move . Molecule_Split() 
 var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
@@ -889,7 +892,7 @@ function Atom(x, y, letter) {
   return true;
   };
   
-  this.Molecule_Split = function(molecule_number){
+  this.Molecule_Split = function(molecule_number){//after a bond split, will change the molecule # for all bonded atoms to this atom
     let x_y = this.x.toString() + "_" + this.y.toString();
     if(molecule[x_y] == molecule_number){return false;} //already done this one
     molecule[x_y] = molecule_number;
@@ -961,9 +964,7 @@ function Atom(x, y, letter) {
     }
 
     //if here, all downstream tests are good to move. but this does not mean that the move will not fail due to another branch, atom, or wall
-    //premature this.x should only be updated when we move.
-    //this.x = this.x + dx + dx;
-    //this.y = this.y + dy + dy;
+    //premature: //this.x should only be updated when we move.//this.x = this.x + dx + dx;//this.y = this.y + dy + dy;
     move[x_y] = x_y_full_step; //used to move atoms if we are good to go
     //or move[x_y] = '' + this.x + '_' + this.y;
     return true;
