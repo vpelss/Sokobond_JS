@@ -1,5 +1,5 @@
 # Sokobond_JS
-My latest programming project is a JavaScript recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. 
+This is a JavaScript recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. 
 Play a few levels of Sokobond for free and see that it is worth every penny to buy the original!
 
 I have made a basic graphical puzzle editor to assist the manual string editor.
@@ -12,7 +12,7 @@ I still use tables, as they work better than pure DIV / CSS on game grids. CSS, 
 It is running live at:
 https://www.emogic.com/Sokobond_JS/
 
-Please do not distribute the original Sokobond game puzzles without the authors consent. Please support the game designers by purchasing their software.
+Please do not distribute the original Sokobond game puzzles without the author's consent (of Original Sokobond). Please support game designers by purchasing their software.
 See:
 https://www.sokobond.com/
 See:
