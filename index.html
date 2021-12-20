@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en" >
 
@@ -5,8 +7,7 @@
 
   <meta charset="UTF-8">
 
-  <title>CodePen - Chemical Zen - Sokobond in JS</title>
- 
+  <title>Chemical Zen - Sokobond in JS</title>
   
 <style>
 table {
@@ -321,7 +322,17 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 </head>
 
 <body translate="no" >
-  <html>
+  <!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Chemical Zen - Sokobond in JS</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<html>
 
 <head>
   <meta name="description" content="Chemical Zen - Sokobond in JS">
@@ -362,8 +373,8 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   </nav>
 
   <header class="w3-bar w3-card w3-theme">
-    <button class="w3-bar-item w3-button w3-large w3-hover-theme" onclick="openSidebar()">&#9776;</button>
-    <h7 class="w3-bar-item">Chemical Zen</h7>
+    <button class="w3-bar-item w3-button w3-large w3-hover-theme" onclick="openSidebar();">&#9776;</button>
+    <h6 class="w3-bar-item">Chemical Zen</h6>
   </header>
 
   <script>
@@ -445,6 +456,11 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 </body>
 
 </html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>
   
   
       <script id="rendered-js" >
@@ -482,7 +498,7 @@ var direction = {
 //allows us to save JSON.stringify(board) then easily rebuild each object on board.
 var board = {}; //[x_y] can_be objects of type empty , atom , bond , bond_modifier
 var molecule = {}; // will show which atoms are in same molecule or not molecule[x_y] = 1 , 2 , 3 , 4 , etc. calculate before every move. required so we can  push / pull via bonds atoms in our molecule IN OREDR. otherwise we could jump to our tail and push / pull in wrong direction by bonds....
-var molecule_last_count; //set on fresh Build_Molecules(). used so we can easily split molecules when trying to move . Molecule_Split() 
+var molecule_last_count; //set on fresh Build_Molecules(). used so we can easily split molecules when trying to move . Molecule_Split()
 var board_mode = "game"; //or editor or
 var move = {}; //move[x_y] = x_new_y_new , a list of moves for this turn so we can process moves if move attempt is sucessful
 var atom_intended_move = {}; //atoms_intended_move[xNew_yNew] = 1; allows us to easily check to see if 2 atoms trying to occupy same space (a fail condition)
@@ -870,47 +886,60 @@ function Atom(x, y, letter) {
   if (x <= 0 || y <= 0 || x >= board.width || y >= board.hight) {
     //atoms cannot exist on edge. Only walls.
     alert("Atom cannot go on the edge");
-    return new Empty(x, y, '0'); // return empty instead
+    return new Empty(x, y, "0"); // return empty instead
   }
 
-  this.Build_Molecules = function(molecule_number){
+  this.Build_Molecules = function (molecule_number) {
     let x_y = this.x.toString() + "_" + this.y.toString();
-    if(typeof molecule[x_y] != 'undefined'){return false;} //already done this one
+    if (typeof molecule[x_y] != "undefined") {
+      return false;
+    } //already done this one
     molecule[x_y] = molecule_number;
     let all_news = Get_NEWS(this.x, this.y);
-    for (let key in direction) {//N,S,E,W
-      let x_y_half_step = all_news[key].x_y_half_step;
-      let x_y_full_step = all_news[key].x_y_full_step;
-      if (board[x_y_half_step].is_a == "bond") {//there is a bond
-        if (board[x_y_full_step].is_a === "atom") {//this is a bonded atom!
-        board[x_y_full_step].Build_Molecules(molecule_number);
+    for (let key in direction)
+      if (direction.hasOwnProperty(key)) {
+        //N,S,E,W
+        let x_y_half_step = all_news[key].x_y_half_step;
+        let x_y_full_step = all_news[key].x_y_full_step;
+        if (board[x_y_half_step].is_a == "bond") {
+          //there is a bond
+          if (board[x_y_full_step].is_a === "atom") {
+            //this is a bonded atom!
+            board[x_y_full_step].Build_Molecules(molecule_number);
+          }
         }
       }
-    }
-  return true;
+    return true;
   };
-  
-  this.Molecule_Split = function(molecule_number){//after a bond split, will change the molecule # for all bonded atoms to this atom
+
+  this.Molecule_Split = function (molecule_number) {
+    //after a bond split, will change the molecule # for all bonded atoms to this atom
     let x_y = this.x.toString() + "_" + this.y.toString();
-    if(molecule[x_y] == molecule_number){return false;} //already done this one
+    if (molecule[x_y] == molecule_number) {
+      return false;
+    } //already done this one
     molecule[x_y] = molecule_number;
     let all_news = Get_NEWS(this.x, this.y);
-    for (let key in direction) {//N,S,E,W
-      let x_y_half_step = all_news[key].x_y_half_step;
-      let x_y_full_step = all_news[key].x_y_full_step;
-      if (board[x_y_half_step].is_a == "bond") {//there is a bond
-        if (board[x_y_full_step].is_a === "atom") {//this is a bonded atom!
-        board[x_y_full_step].Molecule_Split(molecule_number);
+    for (let key in direction)
+      if (direction.hasOwnProperty(key)) {
+        //N,S,E,W
+        let x_y_half_step = all_news[key].x_y_half_step;
+        let x_y_full_step = all_news[key].x_y_full_step;
+        if (board[x_y_half_step].is_a == "bond") {
+          //there is a bond
+          if (board[x_y_full_step].is_a === "atom") {
+            //this is a bonded atom!
+            board[x_y_full_step].Molecule_Split(molecule_number);
+          }
         }
       }
-    }
-  return true;  
+    return true;
   };
 
   this.Can_I_Move = function (NEWS) {
     //also transfers force
-    let dx = direction[NEWS].x;
-    let dy = direction[NEWS].y;
+    //let dx = direction[NEWS].x;
+    //let dy = direction[NEWS].y;
     let x_y = this.x.toString() + "_" + this.y.toString();
     let all_news = Get_NEWS(this.x, this.y);
     let x_y_half_step = all_news[NEWS].x_y_half_step;
@@ -932,27 +961,34 @@ function Atom(x, y, letter) {
     //3. state atom's intention of moving here
     atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
 
-//switch 4 and 5 and do Molecule_Split() after every split. otherwise we fully authorize a move after a split when pushing against our own molecule atoms
+    //switch 4 and 5 and do Molecule_Split() after every split. otherwise we fully authorize a move after a split when pushing against our own molecule atoms
 
     //5. can our molecule move
     //this is for bonds and atoms in our molecule!
     //see if bonds (not touched) can move
     //all_news = Get_NEWS(this.x, this.y); duplicate
-    for (let key in all_news) {
-      let x_y_half_step = all_news[key].x_y_half_step;
-      let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
-      if (board[x_y_half_step].is_a === "bond") {
-        if (!board[x_y_half_step].Can_I_Move(NEWS, key, x_y, receiving_atom)) {
-          return false;
-        } //bond routine needs NEWS,transmitting_atom,recieving_atom
+    for (let key in all_news)
+      if (all_news.hasOwnProperty(key)) {
+        let x_y_half_step = all_news[key].x_y_half_step;
+        let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
+        if (board[x_y_half_step].is_a === "bond") {
+          if (
+            !board[x_y_half_step].Can_I_Move(NEWS, key, x_y, receiving_atom)
+          ) {
+            return false;
+          } //bond routine needs NEWS,transmitting_atom,recieving_atom
+        }
       }
-    }
-    
+
     //4. see if non bonded atom,not touched, not in our molecule, is in our way, and see if it can move
-    if (board[x_y_half_step].is_a !== "bond") {//no bond in our way
-      if (board[x_y_full_step].is_a === "atom") {//atom in our way
-        if (touched[x_y_full_step] !== 1) {//hasn't been touched
-          if(molecule[x_y] != molecule[x_y_full_step]){//ONLY PUSH atoms that are not in our molecule!!!!
+    if (board[x_y_half_step].is_a !== "bond") {
+      //no bond in our way
+      if (board[x_y_full_step].is_a === "atom") {
+        //atom in our way
+        if (touched[x_y_full_step] !== 1) {
+          //hasn't been touched
+          if (molecule[x_y] != molecule[x_y_full_step]) {
+            //ONLY PUSH atoms that are not in our molecule!!!!
             if (!board[x_y_full_step].Can_I_Move(NEWS)) {
               return false;
             }
@@ -974,14 +1010,17 @@ function Atom(x, y, letter) {
     var NEWS_valances = {};
     var all_news_sorted_array = []; //pop?
     let all_news = Get_NEWS(this.x, this.y);
-    for (var key in all_news) {
-      let x_y_full_step = all_news[key].x_y_full_step;
-      if(board[x_y_full_step].is_a === 'atom'){
-        NEWS_valances[key] = board[x_y_full_step].Return_Free_Valence();
+    for (var key in all_news)
+      if (all_news.hasOwnProperty(key)) {
+        let x_y_full_step = all_news[key].x_y_full_step;
+        if (board[x_y_full_step].is_a === "atom") {
+          NEWS_valances[key] = board[x_y_full_step].Return_Free_Valence();
+        }
       }
-    }
     //sort the valences high to low
-    all_news_sorted_array = Object.entries(NEWS_valances).sort((a,b) => b[1]-a[1]).map(el=>el[0]);
+    all_news_sorted_array = Object.entries(NEWS_valances)
+      .sort((a, b) => b[1] - a[1])
+      .map((el) => el[0]);
 
     //Return_Free_Valence of this atom
     let free_valence = this.Return_Free_Valence();
@@ -989,7 +1028,8 @@ function Atom(x, y, letter) {
     //for(var key in direction){
     all_news = Get_NEWS(this.x, this.y);
     //for (var key in all_news) {
-    for (var key of all_news_sorted_array) {//using sorted NEWS based on valences above
+    for (key of all_news_sorted_array) {
+      //using sorted NEWS based on valences above
       if (free_valence <= 0) {
         return;
       }
@@ -1014,12 +1054,13 @@ function Atom(x, y, letter) {
     let sum = 0;
     let free_valence;
     let all_news = Get_NEWS(this.x, this.y);
-    for (let key in all_news) {
-      let x_y = all_news[key].x_y_half_step;
-      if (board[x_y].is_a === "bond") {
-        sum = sum + board[x_y].value;
+    for (let key in all_news)
+      if (all_news.hasOwnProperty(key)) {
+        let x_y = all_news[key].x_y_half_step;
+        if (board[x_y].is_a === "bond") {
+          sum = sum + parseInt(board[x_y].letter); //letter is ascii
+        }
       }
-    }
     free_valence = this.valence - sum;
     if (free_valence < 0) {
       console.log("Impossible free_valence at " + x + "_" + y);
@@ -1030,13 +1071,12 @@ function Atom(x, y, letter) {
   return this; //return constructor
 }
 
-function Molecule_Split(transmitting_atom){
-  var molecule_count = 0; 
+function Molecule_Split(transmitting_atom) {
+  //var molecule_count = 0;
   molecule_last_count++; //find a free molecule #
-  molecule_number =  molecule_last_count;
-  
-  board[transmitting_atom].Molecule_Split(molecule_number); //will change all bonded atoms to this molecule  
-  
+  molecule_number = molecule_last_count;
+
+  board[transmitting_atom].Molecule_Split(molecule_number); //will change all bonded atoms to this molecule
 }
 
 function Bond(x, y, letter) {
@@ -1044,7 +1084,7 @@ function Bond(x, y, letter) {
   this.x = x;
   this.y = y;
   //this.letter = letter; //ths is only used on bond creation. then we use value.
-  this.value = parseInt(letter);
+  //this.value = parseInt(letter);
   this.letter = letter;
 
   //all atom forces MUST be transmitted in order from source to receiver
@@ -1058,13 +1098,13 @@ function Bond(x, y, letter) {
     let dx = direction[NEWS].x;
     let dy = direction[NEWS].y;
     //note: this.x and this.y may be wrong
-   // let xx = String_To_X_Y(transmitting_atom)[0] + dx;
+    // let xx = String_To_X_Y(transmitting_atom)[0] + dx;
     //let yy = String_To_X_Y(transmitting_atom)[1] + dy;
-   // let x_y = xx.toString() + "_" + yy.toString();    
-    let x_y = this.x.toString() + "_" + this.y.toString();    
+    // let x_y = xx.toString() + "_" + yy.toString();
+    let x_y = this.x.toString() + "_" + this.y.toString();
     let all_news = Get_NEWS(this.x, this.y);
     let x_y_half_step = all_news[NEWS].x_y_half_step;
-    let x_y_full_step = all_news[NEWS].x_y_full_step;
+    //let x_y_full_step = all_news[NEWS].x_y_full_step;
 
     if (touched[x_y] === 1) {
       return true;
@@ -1079,11 +1119,11 @@ function Bond(x, y, letter) {
     if (board[x_y_half_step].is_a === "bond_modifier") {
       if (board[x_y_half_step].letter === "-") {
         //reduce bond by 1. if 0, do not transmit force and return true
-        board[x_y].value--;
-        if (board[x_y].value <= 0) {
+        board[x_y].letter--;
+        if (board[x_y].letter <= 0) {
           sound_sub_bond.play();
           board[x_y] = new Empty(this.x, this.y, "0"); //remove bond
-          Molecule_Split(transmitting_atom);//need to identify that molecule is, potentialy, split!
+          Molecule_Split(transmitting_atom); //need to identify that molecule is, potentially, split!
           return true;
         }
       }
@@ -1095,7 +1135,7 @@ function Bond(x, y, letter) {
           board[receiving_atom].Return_Free_Valence() > 0
         ) {
           sound_add_bond.play();
-          board[x_y].value++;
+          board[x_y].letter++;
         } //if not ignore and continue
       }
 
@@ -1120,7 +1160,7 @@ function Bond(x, y, letter) {
     }
 
     //move bond. second half of calculation, see above.
-    //premature. this.x should only be updated when we move. //this.x = half_move_x + dx; // this.y = half_move_y + dy; //move[x_y] = "" + this.x + "_" + this.y; //used to move bond if we are good to go    
+    //premature. this.x should only be updated when we move. //this.x = half_move_x + dx; // this.y = half_move_y + dy; //move[x_y] = "" + this.x + "_" + this.y; //used to move bond if we are good to go
     move[x_y] = "" + (half_move_x + dx) + "_" + (half_move_y + dy); //used to move bond if we are good to go
     return true;
   };
@@ -1274,7 +1314,7 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
       }
       if (board[x_y].is_a === "bond") {
         let state = State(x, y); //can't use className as it might have trailing editor
-        element.innerHTML = svg["" + state + "_" + board[x_y].value];
+        element.innerHTML = svg["" + state + "_" + board[x_y].letter];
       }
       if (board[x_y].is_a === "bond_modifier") {
         element.innerHTML = svg[letter];
@@ -1283,7 +1323,8 @@ function Objects_To_Place_Pieces_On_HTML_Board() {
   }
 }
 
-function Build_Puzzle(input_string) {//called on load, z key, and r key. it creates html board and places pieces on board so no save state stuff here
+function Build_Puzzle(input_string) {
+  //called on load, z key, and r key. it creates html board and places pieces on board so no save state stuff here
   //build display board and board objects
   let element = document.getElementById("win");
   element.classList.remove("win");
@@ -1297,7 +1338,7 @@ function Build_Puzzle(input_string) {//called on load, z key, and r key. it crea
   Join_Free_Atoms();
   Objects_To_Create_Empty_HTML_Board();
   Objects_To_Place_Pieces_On_HTML_Board();
- }
+}
 
 //object  functions
 function ASCII_To_Objects(ascii_string) {
@@ -1362,22 +1403,24 @@ function ASCII_To_Objects(ascii_string) {
 //as we can only easily save objects as json, and json strips the methods, we need this routine to add the methods to the json objects
 function Restore_Object_Methods_From_JSON(json_string) {
   board = JSON.parse(json_string);
-  for (let key in board) {
-    let x, y;
-    [x, y] = String_To_X_Y(key);
-    if (board[key].is_a === "wall") {
-      board[key] = new Wall(x, y, board[key].letter);
+  for (let key in board)
+    if (board.hasOwnProperty(key)) {
+      let x, y;
+      [x, y] = String_To_X_Y(key);
+      if (board[key].is_a === "wall") {
+        board[key] = new Wall(x, y, board[key].letter);
+      }
+      if (board[key].is_a === "empty") {
+        board[key] = new Empty(x, y, board[key].letter);
+      }
+      if (board[key].is_a === "bond") {
+        //board[key] = new Bond(x, y, board[key].value);
+        board[key] = new Bond(x, y, board[key].letter);
+      }
+      if (board[key].is_a === "atom") {
+        board[key] = new Atom(x, y, board[key].letter);
+      }
     }
-    if (board[key].is_a === "empty") {
-      board[key] = new Empty(x, y, board[key].letter);
-    }
-    if (board[key].is_a === "bond") {
-      board[key] = new Bond(x, y, board[key].value);
-    }
-    if (board[key].is_a === "atom") {
-      board[key] = new Atom(x, y, board[key].letter);
-    }
-  }
 }
 
 //editor functions -------------------------
@@ -1400,8 +1443,8 @@ function Blank_Editor_ASCII() {
 
 function Place_Item_Menu(square_id) {
   //show menu
-  let x = event.clientX; // Get the horizontal coordinate
-  let y = event.clientY; // Get the vertical coordinate
+  //let x = event.clientX; // Get the horizontal coordinate
+  //let y = event.clientY; // Get the vertical coordinate
   let element = document.getElementById("Item_Menu");
   // element.style.left = x + "px";
   //element.style.top = y + "px";
@@ -1479,8 +1522,8 @@ function Board_To_ASCII() {
   let ascii_string = board.x_y_me.trim() + "\r\n";
   for (let y = 0; y <= board.height; y++) {
     for (let x = 0; x <= board.width; x++) {
-      if(typeof board[x + "_" + y].letter === 'undefined'){
-        board[x + "_" + y].letter = '0'
+      if (typeof board[x + "_" + y].letter === "undefined") {
+        board[x + "_" + y].letter = "0";
       }
       ascii_string = ascii_string + board[x + "_" + y].letter;
     }
@@ -1587,31 +1630,33 @@ function Prep_New_Board() {
 //suspect orig bonds to biggest nearby free valance first! See chandeliere puzzle.
 //fixed with reservations. seems like cheating!
 function Join_Free_Atoms() {
-   if (board[board.x_y_me].is_a === "atom") {
-     board[board.x_y_me].Join_To_Free_Atoms(); //do me first
-   }
-  for (let key in board) { //do all other atoms
+  if (board[board.x_y_me].is_a === "atom") {
+    board[board.x_y_me].Join_To_Free_Atoms(); //do me first
+  }
+  for (let key in board) {
+    //do all other atoms
     if (board[key].is_a === "atom") {
       board[key].Join_To_Free_Atoms();
     }
   }
 }
 
-function Build_Molecules(){
+function Build_Molecules() {
   molecule = {};
   var molecule_count = 0;
   for (let y = 0; y <= board.height; y++) {
     for (let x = 0; x <= board.width; x++) {
-      let x_y = x + '_' + y;
-      if(board[x_y].is_a === 'atom'){
-        if(typeof molecule[x_y] == 'undefined'){//ignore ones we have already checked
+      let x_y = x + "_" + y;
+      if (board[x_y].is_a === "atom") {
+        if (typeof molecule[x_y] == "undefined") {
+          //ignore ones we have already checked
           molecule_count++; //if here, this must be a brand new molecule
           board[x_y].Build_Molecules(molecule_count); //will add all bonded atoms to this molecule
         }
       }
     }
   }
-molecule_last_count =  molecule_count;//save last molecule for Molecule_Split() 
+  molecule_last_count = molecule_count; //save last molecule for Molecule_Split()
 }
 
 function win_routine() {
@@ -1650,23 +1695,24 @@ function String_To_X_Y(x_y) {
 
 function Get_NEWS(x, y) {
   let news = {};
-  for (let key in direction) {
-    let dx = direction[key].x;
-    let dy = direction[key].y;
-    let x_half_step = x + dx;
-    let y_half_step = y + dy;
-    let x_full_step = x + dx + dx;
-    let y_full_step = y + dy + dy;
-    let x_y_half_step = x_half_step + "_" + y_half_step;
-    let x_y_full_step = x_full_step + "_" + y_full_step;
-    news[key] = {};
-    news[key].x_half_step = x_half_step;
-    news[key].y_half_step = y_half_step;
-    news[key].x_full_step = x_full_step;
-    news[key].y_full_step = y_full_step;
-    news[key].x_y_half_step = x_y_half_step;
-    news[key].x_y_full_step = x_y_full_step;
-  }
+  for (let key in direction)
+    if (direction.hasOwnProperty(key)) {
+      let dx = direction[key].x;
+      let dy = direction[key].y;
+      let x_half_step = x + dx;
+      let y_half_step = y + dy;
+      let x_full_step = x + dx + dx;
+      let y_full_step = y + dy + dy;
+      let x_y_half_step = x_half_step + "_" + y_half_step;
+      let x_y_full_step = x_full_step + "_" + y_full_step;
+      news[key] = {};
+      news[key].x_half_step = x_half_step;
+      news[key].y_half_step = y_half_step;
+      news[key].x_full_step = x_full_step;
+      news[key].y_full_step = y_full_step;
+      news[key].x_y_half_step = x_y_half_step;
+      news[key].x_y_full_step = x_y_full_step;
+    }
   return news;
 }
 
@@ -1742,19 +1788,19 @@ function Key_Input(keyCode) {
     return;
   }
   if (keyCode == 82) {
-    //r 82   
-    Build_Puzzle(previous_boards[0]);  
-    previous_boards = previous_boards.slice(0,1);//only keep the first array element
+    //r 82
+    Build_Puzzle(previous_boards[0]);
+    previous_boards = previous_boards.slice(0, 1); //only keep the first array element
     Save_State();
     return;
   }
   if (keyCode == 90) {
     //z:undo
     if (previous_boards.length > 1) {
-      previous_boards.pop(); //last array item is current puzzle. remove it 
-      Build_Puzzle( previous_boards[previous_boards.length-1] );
+      previous_boards.pop(); //last array item is current puzzle. remove it
+      Build_Puzzle(previous_boards[previous_boards.length - 1]);
       Save_State();
-    return; //do not hit move routine
+      return; //do not hit move routine
     }
   }
   let move_key_pressed = false;
@@ -1792,26 +1838,30 @@ function Key_Input(keyCode) {
       sound_move.stop();
       sound_move.play(); //make a happy sound
       //all moves are in move[x_y] = 'x_y_new'
-      //so for all premoves (keys) copy all the "references" of the atom or bond object : temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
+      //so for all pre-moves (keys) copy all the "references" of the atom or bond object : temp[x_y]  = board[x_y] then board[x_y] = new empty(x,y)
       //create a new Empty object at the old location
       //then for each x_y key copy the "references" of the atom or board object to new position board[x_y_new] = temp[x_y]
       let temp = {};
       let key;
-      for (key in move) {//save temp reference for all moving board objects. then remove the board references (set to empty)
-        temp[key] = board[key];
-        board[key] = new Empty(String_To_X_Y(key) , '0');
-      }
-      for (key in move) {//now set all moved board references
-        let new_x_y = move[key];
-        board[new_x_y] = temp[key];
-        [board[new_x_y].x , board[new_x_y].y] = String_To_X_Y(new_x_y); //set atom or bond this.x , this.y to new values
-      }
+      for (key in move)
+        if (move.hasOwnProperty(key)) {
+          //save temp reference for all moving board objects. then remove the board references (set to empty)
+          temp[key] = board[key];
+          board[key] = new Empty(String_To_X_Y(key), "0");
+        }
+      for (key in move)
+        if (move.hasOwnProperty(key)) {
+          //now set all moved board references
+          let new_x_y = move[key];
+          board[new_x_y] = temp[key];
+          [board[new_x_y].x, board[new_x_y].y] = String_To_X_Y(new_x_y); //set atom or bond this.x , this.y to new values
+        }
       //move me locator variable
       board.x_y_me = move[board.x_me + "_" + board.y_me];
       [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
       Join_Free_Atoms(); //for every atom, check for atoms that can bond
       //save board state
-      previous_boards.push( Board_To_ASCII() ); //for z - undo
+      previous_boards.push(Board_To_ASCII()); //for z - undo
     } else {
       //nothing has moved, but reset board objects with last board state as some x,y may be wrong. recursive fail routine will miss some objects
       sound_fail.play(); //make a sad sound
@@ -1829,18 +1879,17 @@ function Save_State() {
   if (supports_html5_storage() == false) {
     return;
   }
-try {
-  localStorage.previous_boards = JSON.stringify(previous_boards);
-}
-catch(err) {//Block of code to handle errors
-  console.log(err + ' out lof local storage space. Lots of moves Batman!');
-  //remove 2 moves
-  previous_boards.shift();
-  previous_boards.shift();
-  Save_State(); //try agian. Is this wise? 
-}
-finally {
-}
+  try {
+    localStorage.previous_boards = JSON.stringify(previous_boards);
+  } catch (err) {
+    //Block of code to handle errors
+    console.log(err + " out lof local storage space. Lots of moves Batman!");
+    //remove 2 moves
+    previous_boards.shift();
+    previous_boards.shift();
+    Save_State(); //try agian. Is this wise?
+  } finally {
+  }
 }
 
 function supports_html5_storage() {
@@ -1864,7 +1913,7 @@ function Load_Puzzle(puzzle) {
 }
 
 function Factory_Reset() {
-  previous_boards.splice(0, previous_boards.length);//delete array
+  previous_boards.splice(0, previous_boards.length); //delete array
   delete localStorage.editor_board;
   delete localStorage.previous_boards;
 }
@@ -1874,18 +1923,20 @@ function Game() {
   var ascii;
   board_mode = "game";
 
-   if(! supports_html5_storage()) {
-    alert('This browser does not support HTML 5localStorage');
+  if (!supports_html5_storage()) {
+    alert("This browser does not support HTML 5 localStorage");
     return;
-   }
-
-  if ( (typeof localStorage.previous_boards !== "undefined") && (localStorage.previous_boards !== []) ) {
-      previous_boards = JSON.parse( localStorage.previous_boards ); 
-      ascii = previous_boards[previous_boards.length-1];//last array item is current puzzle
-      document.getElementById("input_area").value = previous_boards[0];
-      Build_Puzzle(ascii);
   }
-  else{
+
+  if (
+    typeof localStorage.previous_boards !== "undefined" &&
+    localStorage.previous_boards !== []
+  ) {
+    previous_boards = JSON.parse(localStorage.previous_boards);
+    ascii = previous_boards[previous_boards.length - 1]; //last array item is current puzzle
+    document.getElementById("input_area").value = previous_boards[0]; //get board start state
+    Build_Puzzle(ascii);
+  } else {
     let name = Object.keys(puzzles)[0]; //returns first game name in puzzles
     ascii = puzzles[name];
     document.getElementById("input_area").value = ascii;
@@ -1894,15 +1945,16 @@ function Game() {
     previous_boards.push(ascii);
     Save_State();
   }
-
 }
 
 function Editor() {
   board_mode = "editor";
   let ascii_text;
-  if (typeof localStorage.editor_board === "undefined") {// no stored editor  
+  if (typeof localStorage.editor_board === "undefined") {
+    // no stored editor
     ascii_text = Blank_Editor_ASCII();
-  } else {//stored editor  
+  } else {
+    //stored editor
     ascii_text = localStorage.editor_board;
   }
   document.getElementById("input_area").value = ascii_text;
