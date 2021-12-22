@@ -4,8 +4,21 @@
 <html lang="en" >
 
 <head>
-<meta name="viewport" content="width=device-width" initial-scale="1.0">
-  <title>Chemical Zen - Sokobond in JS</title>
+
+  <meta charset="UTF-8">
+  
+<link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+<meta name="apple-mobile-web-app-title" content="CodePen">
+
+<link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
+
+<link rel="mask-icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
+
+
+  <title>CodePen - Chemical Zen - Sokobond in JS</title>
+  
+  
+  
   
 <style>
 table {
@@ -320,9 +333,19 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 </head>
 
 <body translate="no" >
-  <body ONKEYUP="Key_Input(event.keyCode);">
+  <!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width" initial-scale="1.0">
+	<title>Chemical Zen - Sokobond in JS</title>
+	<link rel="stylesheet" href="./style.css" type="text/css">
+</head>
+
+<body ONKEYUP="Key_Input(event.keyCode);">
 
 	<!-- https://www.w3schools.com/w3css/w3css_mobile.asp  -->
+
 	<nav class="w3-sidebar w3-bar-block w3-card w3-animate-top" id="mySidebar">
 		<div class="w3-container w3-theme-d2">
 			<span onclick="closeSidebar()" class="w3-button w3-display-topright w3-large">X</span><br>
@@ -332,16 +355,18 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 			</option>
 		</select><br>
 		<br>
-		--- Editor --- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = document.getElementById('input_area').value;Editor();">ASCII to update editor OR puzzle to editor</a> 
-    
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Build puzzle from ASCII</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor</a> --- Problems? --- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();Game();">Factory reset</a>
+		--- Editor --- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = document.getElementById('input_area').value;Editor();">ASCII to update editor OR puzzle to editor</a>
+
+  		 <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Build puzzle from ASCII</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a> <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor</a> --- Problems? --- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();Game();">Factory reset</a>
 	</nav>
 
 	<header class="w3-bar w3-card w3-theme">
 		<button class="w3-bar-item w3-button w3-large w3-hover-theme" onclick="openSidebar();">☰</button>
 
 		<h6 class="w3-bar-item">Chemical Zen</h6>
-	</header><script type="text/javascript">
+	</header>
+
+<script type="text/javascript">
 function openSidebar() {
 	  document.getElementById("mySidebar").style.display = "block";
 	}
@@ -366,7 +391,7 @@ function openSidebar() {
 
 		<p><a href="https://www.emogic.com" target="_blank" rel="noopener">Emogic</a></p>
 
-		<p><audio autoplay controls src="http://emogic.com/Sokobond_JS/Open%20to%20the%20Elements_.mp3" type="audio/mpeg"></audio></p>
+		<p><audio autoplay controls src="https://emogic.com/Sokobond_JS/Open%20to%20the%20Elements_.mp3" type="audio/mpeg"></audio></p>
 	</center>
 
 	<div id="Item_Menu" class="w3-display-middle w3-code" style="display:none;">
@@ -397,7 +422,11 @@ function openSidebar() {
 	</div>
 
 	<div id="win"></div>
+
+	<script src="./script.js" type="text/javascript">
+</script>
 </body>
+</html>
   
   
       <script id="rendered-js" type="module">
