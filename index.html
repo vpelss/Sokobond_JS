@@ -3,7 +3,7 @@
 
 <head>
   <title>Chemical Zen - Sokobond in JS</title>
-  
+    
 <style>
 table {
   border-spacing: 0px;
@@ -320,11 +320,11 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 </head>
 
 <body translate="no" >
-  <html>
+  <html lang="en">
 
 <head>
+  <meta name="viewport" content="width=device-width" initial-scale="1.0">
   <title>Chemical Zen - Sokobond in JS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body ONKEYUP="Key_Input(event.keyCode);">
@@ -334,31 +334,46 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
     <div class="w3-container w3-theme-d2">
       <span onclick="closeSidebar()" class="w3-button w3-display-topright w3-large">X</span><br>
     </div>
+
     <div>--- Game ---</div>
-    <a class="w3-bar-item w3-button" href="https://www.sokobond.com/" onclick="closeSidebar();" target="_blank" rel="noopener">Original Sokobond</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(how_to_play);">How to play</a> <label for="puzzle_select">Puzzle:</label><select name="puzzle_select" id="puzzle_select" onchange="closeSidebar();Load_Puzzle(this.value);this.selectedIndex=0;">
-      <option value="" disabled selected>---</option>
+   <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(how_to_play);">How to play</a>
+   <div>Puzzle:</div>
+   <select name="puzzle_select" id="puzzle_select" onchange="closeSidebar();Load_Puzzle(this.value);this.selectedIndex=0;">
+
+      <option value="" disabled selected>
+        ---
+      </option>
     </select>
+
     <br>
     <br>
     <div>--- Editor ---</div>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = document.getElementById('input_area').value;Editor();">ASCII to update editor OR puzzle to editor</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Build puzzle from ASCII</a>
+    <!-- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a> -->
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = document.getElementById('input_area').value;Editor();">Editor Mode</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Game Mode</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); localStorage.editor_board = Blank_Editor_ASCII();Editor();">Reset editor</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); if(confirm('Are you sure? This will erase the current editor settings.')){localStorage.editor_board = Blank_Editor_ASCII();Editor();}">Reset editor</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes explanation</a>
     <div>--- Problems? ---</div>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Factory_Reset();Game();">Factory reset</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();if(confirm('Are you sure? This will erase all saved settings.')){Factory_Reset();Game();}">Factory reset</a>
+
+   <div>--- Sokobond ---</div>
+    <a class="w3-bar-item w3-button" href="https://www.sokobond.com/" onclick="closeSidebar();" target="_blank" rel="noopener">Based on Original Sokobond</a>
+
+<div>--- JS code ---</div>
+
+    <a class="w3-bar-item w3-button" href="https://github.com/vpelss/Sokobond_JS" onclick="closeSidebar();" target="_blank" rel="noopener">Github</a>
+
+    <a class="w3-bar-item w3-button" href="https://www.emogic.com" onclick="closeSidebar();" target="_blank" rel="noopener">Emogic</a>
+
   </nav>
 
   <header class="w3-bar w3-card w3-theme">
     <button class="w3-bar-item w3-button w3-large w3-hover-theme" onclick="openSidebar();">☰</button>
-
     <h6 class="w3-bar-item">Chemical Zen</h6>
   </header>
 
-  <script>
+  <script type="text/javascript">
     function openSidebar() {
       document.getElementById("mySidebar").style.display = "block";
     }
@@ -373,43 +388,42 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
     <div id="board"></div><br>
 
     <div id="ASCII">
-      Build Your Own Puzzle (in ASCII):<br>
+      Copy/Share puzzle. Or paste to import (then choose Game Mode)<br>
       <textarea id="input_area" rows="4" cols="50"></textarea>
     </div>
 
     <p><a href="https://www.sokobond.com/" target="_blank" rel="noopener">Sokobond</a></p>
 
-    <p><a href="https://github.com/vpelss/Sokobond_JS" target="_blank" rel="noopener">https://github.com/vpelss/Sokobond_JS</a></p>
-
-    <p><a href="https://www.emogic.com" target="_blank" rel="noopener">Emogic</a></p>
-
+<!--
     <p><audio autoplay controls src="https://emogic.com/Sokobond_JS/Open%20to%20the%20Elements_.mp3" type="audio/mpeg"></audio></p>
+-->
+
   </center>
 
   <div id="Item_Menu" class="w3-display-middle w3-code" style="display:none;">
-    <a href="#" onclick="Place_Item('0');">Empty</a><br>
+    <a href="#" onclick="Editor_Place_Item('0');">Empty</a><br>
 
     <div id="Item_Menu_Bonds">
-      <a href="#" onclick="Place_Item('1');">Bond 1</a><br>
-      <a href="#" onclick="Place_Item('2');">Bond 2</a><br>
-      <a href="#" onclick="Place_Item('3');">Bond 3</a><br>
-      <a href="#" onclick="Place_Item('4');">Bond 4</a><br>
+      <a href="#" onclick="Editor_Place_Item('1');">Bond 1</a><br>
+      <a href="#" onclick="Editor_Place_Item('2');">Bond 2</a><br>
+      <a href="#" onclick="Editor_Place_Item('3');">Bond 3</a><br>
+      <a href="#" onclick="Editor_Place_Item('4');">Bond 4</a><br>
     </div>
 
     <div id="Item_Menu_Atoms">
-      <a href="#" onclick="Place_Item('W');">Wall</a><br>
-      <a href="#" onclick="Place_Item('h');">Atom He</a><br>
-      <a href="#" onclick="Place_Item('H');">Atom H</a><br>
-      <a href="#" onclick="Place_Item('N');">Atom N</a><br>
-      <a href="#" onclick="Place_Item('O');">Atom O</a><br>
-      <a href="#" onclick="Place_Item('C');">Atom C</a><br>
+      <a href="#" onclick="Editor_Place_Item('W');">Wall</a><br>
+      <a href="#" onclick="Editor_Place_Item('h');">Atom He</a><br>
+      <a href="#" onclick="Editor_Place_Item('H');">Atom H</a><br>
+      <a href="#" onclick="Editor_Place_Item('N');">Atom N</a><br>
+      <a href="#" onclick="Editor_Place_Item('O');">Atom O</a><br>
+      <a href="#" onclick="Editor_Place_Item('C');">Atom C</a><br>
       <a href="#" onclick="Make_Me();">Make this Atom Me</a><br>
     </div>
 
     <div id="Item_Menu_Modifiers">
-      <a href="#" onclick="Place_Item('-');">Splitter</a><br>
-      <a href="#" onclick="Place_Item('+');">Joiner</a><br>
-      <a href="#" onclick="Place_Item('.');">Twister</a><br>
+      <a href="#" onclick="Editor_Place_Item('-');">Splitter</a><br>
+      <a href="#" onclick="Editor_Place_Item('+');">Joiner</a><br>
+      <a href="#" onclick="Editor_Place_Item('.');">Twister</a><br>
     </div>
   </div>
 
@@ -839,6 +853,7 @@ function Atom(x, y, letter) {
     N: 3,
     C: 4
   }[letter]; //set on create based on letter
+  this.forces = {};//keep a record of all attempted forces on this atom. If there are two conflicting forces, return a fail. must erase after a move
 
   if (x <= 0 || y <= 0 || x >= board.width || y >= board.hight) {
     //atoms cannot exist on edge. Only walls.
@@ -893,15 +908,21 @@ function Atom(x, y, letter) {
     return true;
   };
 
-  this.Can_I_Move = function (NEWS) {
+  this.Can_I_Move = function (force) {
     //NEWS is the force in direction N,E,W or S
     let x_y = this.x.toString() + "_" + this.y.toString();
     let all_news = Get_NEWS(this.x, this.y);
-    let x_y_half_step = all_news[NEWS].x_y_half_step;
-    let x_y_full_step = all_news[NEWS].x_y_full_step;
+    let x_y_half_step = all_news[force].x_y_half_step;
+    let x_y_full_step = all_news[force].x_y_full_step;
 
-    if (touched[x_y] === 1) {
-      //this x_y has already been visited/processed. If it had not already replied false, then it must have been true.
+    //this was added for a snake eating tail case, where a bond is hitting a rotator. No error would trigger, and the move would break the loop.
+    //but this check is a logical check that should have been included anyway.
+    this.forces[force] = 1;//record all forces that push/pull on this atom.
+    if( Object.keys(this.forces).length > 1 ){//If there are two or more, they are conflicting forces, so we should return a false.
+      return false;
+      }
+
+    if (touched[x_y] === 1) {//this x_y has already been visited/processed. If it had not already replied false, then it must have been true.
       return true;
     }
     touched[x_y] = 1; //else: set this touched{x_y}=1 so we don't recurse into this atom again and create infinite loops
@@ -920,41 +941,52 @@ function Atom(x, y, letter) {
     //3. state atom's intention of moving here
     atom_intended_move[x_y_full_step] = 1; //used to ensure 2 atoms are not fighting to move to same space
 
-    //4. can our molecule move
-    //this is for bonds (and therefore, later, atoms) in our molecule!
-    //see if bonds (not touched) can move
-    for (let key in all_news)
+     //Logic
+    //a) each visited atom (Including our atom) will create a list of bonds,
+    //b) the atom will choose an unchecked bond, transmit the force (direction), and move to the next atom. See the bond object for bond modifier effects.
+    //c) when we reach an atom at the end of a branch (no more unchecked bonds), we check for an un-bonded atom in the direction of the force to this atom.
+    //d) we attempt to  transmit the force (direction) to this un-bonded atom and await a true/false result
+    //e) if true we then backtrack to the previous atom and go to step b)
+    //f) note: false should always return us as directly as possible to the first atom
+
+    //4. step b) above
+    //note: we must not do the PUSH bond first. If we do, a rotator condition with a snake eating it's tail will fail.
+    let news_temp = ['N','E','W','S'];
+    news_temp.push( news_temp.splice(news_temp.indexOf(force) , 1) ); //find force in array, then remove it, and add it to the end
+    for(let key of news_temp)
+    //for (let key in all_news)
       if (all_news.hasOwnProperty(key)) {
         let x_y_half_step = all_news[key].x_y_half_step;
         let receiving_atom = all_news[key].x_y_full_step; //is where receiving atom is
         if (board[x_y_half_step].is_a === "bond") {
-          if (
-            !board[x_y_half_step].Can_I_Move(NEWS, key, x_y, receiving_atom)
-          ) {
-            //bond routine needs NEWS,transmitting_atom,recieving_atom
+          if ( board[x_y_half_step].Can_I_Move(force, key, x_y, receiving_atom) === false ) {//something downstream cannot move
             return false;
           }
         }
       }
 
-    //5. see if non bonded atom,not touched, not in our molecule, is in our way, then see if it can move
+    //5. so now we see if non bonded atom, not touched, is in our way, then see if it can move
+    //steps c) & d) above
     if (board[x_y_half_step].is_a !== "bond") {
       //no bond in our way
       if (board[x_y_full_step].is_a === "atom") {
         //atom in our way
-        if (touched[x_y_full_step] !== 1) {
-          //has not been touched
-          if (molecule[x_y] != molecule[x_y_full_step]) {
-            //ONLY PUSH atoms that are not in our molecule as we can't (should not) push atoms in our molecule
-            if (!board[x_y_full_step].Can_I_Move(NEWS)) {
-              return false;
-            }
-          }
+        if (touched[x_y_full_step] !== 1) {//has not been touched
+          //if (molecule[x_y] != molecule[x_y_full_step]) //ONLY PUSH atoms that are not in our molecule as we can't (should not) push atoms in our molecule
+          //vinman issue: previously we have assumed molecule will move as a solid unit
+          //when we split a molecule, the transmitting molecule might need to push the receiving atom. We cannot control if the split will occur fist!!!!!!!!
+          //if we remove this condition to fix, will it cause other issues?
+          {
+						if (!board[x_y_full_step].Can_I_Move(force)) {
+							return false;
+						}
+					}
         }
       }
     }
 
-    //if we are here, all downstream tests are good to move for this atom (based on current completed search tree). but this does not mean that the move will not fail due to another upcoming branch of the search tree
+    //if we are here, all downstream tests are good to move for this atom (based on current completed search tree).
+    //but this does not mean that the move will not fail due to another upcoming branch of the search tree
     //so do not update this.x and this.y yet. only do it later, when we move all atoms at once.
     move[x_y] = x_y_full_step; //this is used to move atoms later, if we are good to go
     return true;
@@ -1038,21 +1070,15 @@ function Bond(x, y, letter) {
   this.y = y;
   this.letter = letter;
 
-  this.Can_I_Move = function (
-    NEWS,
-    NEWS_incomming_direction,
-    transmitting_atom,
-    receiving_atom
-  ) {
+  this.Can_I_Move = function (force , NEWS_incomming_direction , transmitting_atom , receiving_atom) {
     //all atom forces (N,E,W,S) MUST be transmitted in order from source to receiver
-    let dx = direction[NEWS].x;
-    let dy = direction[NEWS].y;
+    let dx = direction[force].x;
+    let dy = direction[force].y;
     let x_y = this.x.toString() + "_" + this.y.toString();
     let all_news = Get_NEWS(this.x, this.y);
-    let x_y_half_step = all_news[NEWS].x_y_half_step;
+    let x_y_half_step = all_news[force].x_y_half_step;
 
-    if (touched[x_y] === 1) {
-      //already been processed
+    if (touched[x_y] === 1) {//already been processed. assume it was successful
       return true;
     }
     touched[x_y] = 1; //else
@@ -1103,13 +1129,13 @@ function Bond(x, y, letter) {
           E: "W",
           W: "E"
         };
-        NEWS = anti[NEWS_incomming_direction];
-        dx = direction[NEWS].x;
-        dy = direction[NEWS].y;
+        force = anti[NEWS_incomming_direction];//change force direction 180
+        dx = direction[force].x;
+        dy = direction[force].y;
       }
     }
 
-    if (!board[receiving_atom].Can_I_Move(NEWS)) {
+    if (!board[receiving_atom].Can_I_Move(force)) {
       //transmit force to receiving atom AND test for successful move for this search branch
       return false;
     }
@@ -1187,7 +1213,7 @@ function Create_Empty_HTML_Board() {
           x_y +
           ' class="' +
           state +
-          ' editor" onmousedown="Place_Item_Menu(this.id);"></td>';
+          ' editor" onmousedown="Editor_Menu_Show(this.id);"></td>';
       } else {
         //z and r button cases
         if (x_y === "0_0") {
@@ -1398,7 +1424,7 @@ function Blank_Editor_ASCII() {
   return ascii_text;
 }
 
-function Place_Item_Menu(square_id) {
+function Editor_Menu_Show(square_id) {
   //called from index.html
   let element = document.getElementById("Item_Menu");
   element.style.display = "block"; //show menu
@@ -1424,22 +1450,7 @@ function Place_Item_Menu(square_id) {
   }
 }
 
-function Make_Me() {
-  //called from index.html
-  let element = document.getElementById("Item_Menu");
-  element.style.display = "none"; //hide menu
-
-  let x_y = selected_square;
-  board.x_y_me = x_y;
-  let [x, y] = String_To_X_Y(x_y);
-  board.x_me = x;
-  board.y_me = y;
-  Objects_To_DOM(); //need to redraw to update svg
-  document.getElementById("input_area").value = Objects_To_ASCII();
-  localStorage.editor_board = document.getElementById("input_area").value; //Save editor state
-}
-
-function Place_Item(letter) {
+function Editor_Place_Item(letter) {
   //called from index.html
   let element = document.getElementById("Item_Menu");
   element.style.display = "none"; //hide menu
@@ -1465,6 +1476,21 @@ function Place_Item(letter) {
   Join_Free_Atoms();
   Objects_To_DOM();
 
+  document.getElementById("input_area").value = Objects_To_ASCII();
+  localStorage.editor_board = document.getElementById("input_area").value; //Save editor state
+}
+
+function Make_Me() {
+  //called from index.html
+  let element = document.getElementById("Item_Menu");
+  element.style.display = "none"; //hide menu
+
+  let x_y = selected_square;
+  board.x_y_me = x_y;
+  let [x, y] = String_To_X_Y(x_y);
+  board.x_me = x;
+  board.y_me = y;
+  Objects_To_DOM(); //need to redraw to update svg
   document.getElementById("input_area").value = Objects_To_ASCII();
   localStorage.editor_board = document.getElementById("input_area").value; //Save editor state
 }
@@ -1754,25 +1780,25 @@ function Key_Input(keyCode) {
     }
   }
   let move_key_pressed = false;
-  let NEWS;
+  let force;
   if (keyCode == 37) {
     //left
-    NEWS = "W";
+    force = "W";
     move_key_pressed = true;
   }
   if (keyCode == 38) {
     //up
-    NEWS = "N";
+    force = "N";
     move_key_pressed = true;
   }
   if (keyCode == 39) {
     //right
-    NEWS = "E";
+    force = "E";
     move_key_pressed = true;
   }
   if (keyCode == 40) {
     //down
-    NEWS = "S";
+    force = "S";
     move_key_pressed = true;
   }
   if (move_key_pressed) {
@@ -1783,7 +1809,7 @@ function Key_Input(keyCode) {
 
     let premove_board = Objects_To_ASCII(); //so we can perfectly reset board on a failed move. It is required so we can have our atom that splits from a molecule push the molecule
 
-    if (board[board.x_me + "_" + board.y_me].Can_I_Move(NEWS)) {
+    if (board[board.x_me + "_" + board.y_me].Can_I_Move(force)) {
       //we can move!
       sound_move.stop();
       sound_move.play(); //make a happy sound
@@ -1813,7 +1839,9 @@ function Key_Input(keyCode) {
       [board.x_me, board.y_me] = String_To_X_Y(board.x_y_me);
       Join_Free_Atoms(); //for every atom, check for atoms that can bond
       //save board state
-      previous_boards.push(Objects_To_ASCII()); //for z - undo
+      let temp_ASCII = Objects_To_ASCII();
+      previous_boards.push(temp_ASCII); //for z - undo
+      ASCII_To_Objects(temp_ASCII); //this is here mainly to clear all the atom.forces, but will reset all board objects an reset their values.
     } else {
       //move failed
       //nothing has moved, but reset board objects with last board state as some x,y may be wrong. there may be bugs in my code ;)
@@ -1885,7 +1913,7 @@ function Game() {
   ) {
     previous_boards = JSON.parse(localStorage.previous_boards);
     ascii = previous_boards[previous_boards.length - 1]; //last array item is current puzzle
-    document.getElementById("input_area").value = previous_boards[0]; //get board start state
+    document.getElementById("input_area").value = previous_boards[0]; //get board start state to store in editor
     Build_Puzzle(ascii);
   } else {
     let name = Object.keys(puzzles)[0]; //returns first game name in puzzles
@@ -1945,3 +1973,4 @@ window.addEventListener(
 </body>
 
 </html>
+ 
