@@ -2,7 +2,10 @@
 <html lang="en" >
 
 <head>
-  <title>Chemical Zen - Sokobond in JS</title>
+
+<meta charset="UTF-8">
+  
+<title>Chemical Zen - Sokobond in JS</title>
     
 <style>
 table {
@@ -350,7 +353,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
     <div>--- Editor ---</div>
     <!-- <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Editor();">Last saved edit</a> -->
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();localStorage.editor_board = document.getElementById('input_area').value;Editor();">Editor Mode</a>
-    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Game Mode</a>
+    <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();board_mode='game';Factory_Reset();ascii=document.getElementById('input_area').value;Build_Puzzle(ascii);previous_boards.push(ascii);Save_State();localStorage.editor_board=ascii;">Create / Play</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();Crop_Editor_Board();">Crop editor</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar(); if(confirm('Are you sure? This will erase the current editor settings.')){localStorage.editor_board = Blank_Editor_ASCII();Editor();}">Reset editor</a>
     <a class="w3-bar-item w3-button" href="#" onclick="closeSidebar();alert(building_a_puzzle);">ASCII codes explanation</a>
@@ -1724,19 +1727,19 @@ function sound(src) {
 }
 
 var sound_fail = new sound(
-  "https://www.emogic.com/Sokobond_JS/Windows Critical Stop.mp3"
+  "https://www.emogic.com/mine/Sokobond_JS/Windows Critical Stop.mp3"
 );
 var sound_add_bond = new sound(
-  "https://www.emogic.com/Sokobond_JS/Windows Hardware Insert.mp3"
+  "https://www.emogic.com/mine/Sokobond_JS/Windows Hardware Insert.mp3"
 );
 var sound_sub_bond = new sound(
-  "https://www.emogic.com/Sokobond_JS/Windows Hardware Remove.mp3"
+  "https://www.emogic.com/mine/Sokobond_JS/Windows Hardware Remove.mp3"
 );
 var sound_win = new sound(
-  "https://www.emogic.com/Sokobond_JS/Windows Notify Calendar.mp3"
+  "https://www.emogic.com/mine/Sokobond_JS/Windows Notify Calendar.mp3"
 );
 var sound_move = new sound(
-  "https://www.emogic.com/Sokobond_JS/Windows Balloon.mp3"
+  "https://www.emogic.com/mine/Sokobond_JS/Windows Balloon.mp3"
 );
 
 function Mouse_Down(x_y) {
