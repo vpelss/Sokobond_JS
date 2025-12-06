@@ -1,4 +1,7 @@
 # Sokobond_JS
+
+Play it: https://vpelss.github.io/Sokobond_JS/
+
 This is a JavaScript recreation of an amazing puzzle game Sokobond. I highly recommend the original. The author has given permission to use a few of the puzzle boards, but my dream is for people to create and share their own puzzles. 
 Play a few levels of Sokobond for free and see that it is worth every penny to buy the original!
 
